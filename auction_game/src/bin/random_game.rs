@@ -15,7 +15,7 @@ fn main() {
     }
     let mut game = StandardGame::new(
         "random_game".to_string(),
-        LevelFilter::Info,
+        LevelFilter::Debug,
         controllers,
         true,
     );

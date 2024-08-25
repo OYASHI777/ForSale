@@ -1,8 +1,8 @@
 use crate::game_modes::traits::Game;
-use crate::helper::generation::string_to_seed;
 use crate::models::enums::{Coins, GamePhase, Property};
 use crate::{engines, models};
 use engines::traits::PlayerController;
+use helper::generation::string_to_seed;
 use helper::logger::init_logger;
 use log::{info, LevelFilter};
 use models::game_state::GameState;

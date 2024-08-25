@@ -112,6 +112,36 @@ impl GameState {
         );
         self.coins[player as usize] -= amount;
     }
+    fn insert_in_order(vec: &mut Vec<u8>, value: u8) {
+        match vec.binary_search(&value) {
+            Ok(pos) => vec.insert(pos, value), // Insert at correct position (duplicates allowed)
+            Err(pos) => vec.insert(pos, value), // Insert at the correct position (if not found)
+        }
+    }
+    pub fn insert_check_ascending(&mut self, player: Player, check: Check) {
+        debug_assert!(
+            player < self.no_players,
+            "Player number of {player} too high! Keep it less than {}",
+            &self.no_players
+        );
+        if let Some(checks) = self.checks.get_mut(&player) {
+            Self::insert_in_order(checks, check);
+        } else {
+            debug_assert!(false, "Failed to find player {player} in self.checks");
+        }
+    }
+    pub fn insert_property_ascending(&mut self, player: Player, property: Property) {
+        debug_assert!(
+            player < self.no_players,
+            "Player number of {player} too high! Keep it less than {}",
+            &self.no_players
+        );
+        if let Some(properties) = self.properties.get_mut(&player) {
+            Self::insert_in_order(properties, property);
+        } else {
+            debug_assert!(false, "Failed to find player {player} in self.checks");
+        }
+    }
     pub fn player_now_inactive(&mut self, player: Player) {
         debug_assert!(
             player < self.no_players,
@@ -216,15 +246,17 @@ impl GameState {
             self.auction_properties_remaining() > 0,
             "Cannot take_card if there are no auction properties to take"
         );
-        if let Some(player_properties) = self.properties.get_mut(&player) {
-            player_properties.push(self.auction_pool.pop().unwrap());
-        } else {
-            debug_assert!(
-                false,
-                "Failed to find {player} in self.properties: {:?}",
-                self.properties
-            );
-        }
+        let property: Property = self.auction_pool.pop().unwrap();
+        self.insert_property_ascending(player, property);
+        // if let Some(player_properties) = self.properties.get_mut(&player) {
+        //     player_properties.push(self.auction_pool.pop().unwrap());
+        // } else {
+        //     debug_assert!(
+        //         false,
+        //         "Failed to find {player} in self.properties: {:?}",
+        //         self.properties
+        //     );
+        // }
     }
     pub fn win_bid(&mut self, player: Player) {
         debug_assert!(
@@ -341,11 +373,12 @@ impl GameState {
 
         for (player, _) in player_bids.iter() {
             if let Some(check) = new_state.auction_pool.pop() {
-                if let Some(player_checks) = new_state.checks.get_mut(player) {
-                    player_checks.push(check);
-                } else {
-                    debug_assert!(false, "Failed to get Player: {player}'s checks");
-                }
+                new_state.insert_check_ascending(*player, check);
+                // if let Some(player_checks) = new_state.checks.get_mut(player) {
+                //     player_checks.push(check);
+                // } else {
+                //     debug_assert!(false, "Failed to get Player: {player}'s checks");
+                // }
             } else {
                 debug_assert!(
                     false,

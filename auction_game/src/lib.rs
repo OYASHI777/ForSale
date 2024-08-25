@@ -9,9 +9,7 @@ pub mod game_modes {
     pub mod standard;
     pub mod traits;
 }
-pub mod helper {
-    pub mod generation;
-}
+pub mod helper {}
 pub mod models {
     pub mod constants;
     pub mod enums;
