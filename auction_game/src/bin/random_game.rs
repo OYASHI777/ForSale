@@ -4,7 +4,6 @@ use auction_game::game_modes::standard::StandardGame;
 use auction_game::game_modes::traits::Game;
 use log::LevelFilter;
 
-// TODO: Add to github
 fn main() {
     let no_players: u8 = 6;
     let mut controllers: Vec<Box<dyn PlayerController>> = Vec::with_capacity(no_players as usize);
