@@ -1,5 +1,5 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
-use ahash::{AHashMap, AHashSet};
+use ahash::AHashMap;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::fmt;
@@ -10,8 +10,8 @@ pub struct GameState {
     game_phase: GamePhase,
     no_players: Player,
     coins: Vec<Coins>,
-    properties: AHashMap<Player, AHashSet<Property>>,
-    checks: AHashMap<Player, AHashSet<Check>>,
+    properties: AHashMap<Player, Vec<Property>>,
+    checks: AHashMap<Player, Vec<Check>>,
     current_decision_player: Option<u8>,
     active_players: Vec<bool>,
     active_bids: Vec<u8>,
@@ -58,13 +58,12 @@ impl GameState {
         ];
         remaining_checks.shuffle(&mut rng);
 
-        let mut properties: AHashMap<Player, AHashSet<Property>> =
+        let mut properties: AHashMap<Player, Vec<Property>> =
             AHashMap::with_capacity(no_players as usize);
-        let mut checks: AHashMap<Player, AHashSet<Check>> =
-            AHashMap::with_capacity(no_players as usize);
+        let mut checks: AHashMap<Player, Vec<Check>> = AHashMap::with_capacity(no_players as usize);
         for i in 0..no_players {
-            properties.insert(i, AHashSet::with_capacity(10));
-            checks.insert(i, AHashSet::with_capacity(10));
+            properties.insert(i, Vec::with_capacity(10));
+            checks.insert(i, Vec::with_capacity(10));
         }
         let auction_properties: Vec<u8> = Vec::with_capacity(no_players as usize);
         // TODO: Randomize
@@ -190,7 +189,7 @@ impl GameState {
         }
         actions
     }
-    pub fn legal_moves_sell(&self, player: Player) -> AHashSet<Property> {
+    pub fn legal_moves_sell(&self, player: Player) -> Vec<Property> {
         debug_assert!(
             player < self.no_players,
             "Please ensure player is < {}. It is currently {}",
@@ -218,7 +217,7 @@ impl GameState {
             "Cannot take_card if there are no auction properties to take"
         );
         if let Some(player_properties) = self.properties.get_mut(&player) {
-            player_properties.insert(self.auction_pool.pop().unwrap());
+            player_properties.push(self.auction_pool.pop().unwrap());
         } else {
             debug_assert!(
                 false,
@@ -343,7 +342,7 @@ impl GameState {
         for (player, _) in player_bids.iter() {
             if let Some(check) = new_state.auction_pool.pop() {
                 if let Some(player_checks) = new_state.checks.get_mut(player) {
-                    player_checks.insert(check);
+                    player_checks.push(check);
                 } else {
                     debug_assert!(false, "Failed to get Player: {player}'s checks");
                 }
@@ -452,18 +451,15 @@ impl fmt::Display for GameState {
             "  Player | Bids/Sales | Coins |      Properties      | Checks"
         )?;
         writeln!(f, "------------------------------------")?;
-        let empty_hashset: AHashSet<Property> = AHashSet::with_capacity(0);
+        let empty_vec: Vec<Property> = vec![];
         for player_index in 0..self.no_players {
             let coins = self.coins.get(player_index as usize).unwrap_or(&0);
             let active_bid = self.active_bids.get(player_index as usize).unwrap_or(&0);
             let properties = self
                 .properties
                 .get(&(player_index as u8))
-                .unwrap_or(&empty_hashset);
-            let checks = self
-                .checks
-                .get(&(player_index as u8))
-                .unwrap_or(&empty_hashset);
+                .unwrap_or(&empty_vec);
+            let checks = self.checks.get(&(player_index as u8)).unwrap_or(&empty_vec);
             writeln!(
                 f,
                 "Player {:<1} | {:<11} | {:<5} | {:<20} | {:?}",
