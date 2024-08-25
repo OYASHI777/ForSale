@@ -1,5 +1,6 @@
 pub mod engines {
     pub mod controllers {
+        pub mod minimax;
         pub mod random_player;
     }
     pub mod traits;

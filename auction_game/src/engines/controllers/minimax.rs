@@ -4,20 +4,20 @@ use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
 use rand::thread_rng;
 
-pub struct RandomPlayer {
+pub struct MinimaxPlayer {
     id: u8,
     nickname: String,
     rng: ThreadRng,
 }
 
-impl RandomPlayer {
+impl MinimaxPlayer {
     pub fn new(id: u8, nickname: String) -> Self {
         let rng = thread_rng();
-        RandomPlayer { id, nickname, rng }
+        MinimaxPlayer { id, nickname, rng }
     }
 }
 
-impl PlayerController for RandomPlayer {
+impl PlayerController for MinimaxPlayer {
     fn nickname(&self) -> String {
         self.nickname.clone()
     }
