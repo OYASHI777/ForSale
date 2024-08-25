@@ -1,5 +1,5 @@
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:48 - Starting game: random_game
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:49 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:48 - Starting game: random_game
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:49 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
@@ -15,12 +15,12 @@ Player 4 | 0           | 14    | []                   | []
 Player 5 | 0           | 14    | []                   | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19, 16]      
+      [28, 24, 15, 11, 7, 2]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -31,13 +31,13 @@ Player 4 | 0           | 14    | []                   | []
 Player 5 | 0           | 14    | []                   | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 10 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 7 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19, 16]      
+      [28, 24, 15, 11, 7, 2]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -45,16 +45,16 @@ Player 1 | 0           | 14    | []                   | []
 Player 2 | 0           | 14    | []                   | []
 Player 3 | 0           | 14    | []                   | []
 Player 4 | 0           | 14    | []                   | []
-Player 5 | 10          | 4     | []                   | []
+Player 5 | 7           | 7     | []                   | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 11 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 11 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19, 16]      
+      [28, 24, 15, 11, 7, 2]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -62,16 +62,16 @@ Player 1 | 0           | 14    | []                   | []
 Player 2 | 11          | 3     | []                   | []
 Player 3 | 0           | 14    | []                   | []
 Player 4 | 0           | 14    | []                   | []
-Player 5 | 10          | 4     | []                   | []
+Player 5 | 7           | 7     | []                   | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 12 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 12 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19, 16]      
+      [28, 24, 15, 11, 7, 2]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -79,16 +79,16 @@ Player 1 | 0           | 14    | []                   | []
 Player 2 | 11          | 3     | []                   | []
 Player 3 | 12          | 2     | []                   | []
 Player 4 | 0           | 14    | []                   | []
-Player 5 | 10          | 4     | []                   | []
+Player 5 | 7           | 7     | []                   | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 13 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 13 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19, 16]      
+      [28, 24, 15, 11, 7, 2]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -96,16 +96,16 @@ Player 1 | 0           | 14    | []                   | []
 Player 2 | 11          | 3     | []                   | []
 Player 3 | 12          | 2     | []                   | []
 Player 4 | 13          | 1     | []                   | []
-Player 5 | 10          | 4     | []                   | []
+Player 5 | 7           | 7     | []                   | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 4 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19, 16]      
+      [28, 24, 15, 11, 7]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -113,16 +113,16 @@ Player 1 | 0           | 14    | []                   | []
 Player 2 | 11          | 3     | []                   | []
 Player 3 | 12          | 2     | []                   | []
 Player 4 | 13          | 1     | []                   | []
-Player 5 | 14          | 0     | []                   | []
+Player 5 | 7           | 10    | [2]                  | []
 Player 6 | 0           | 14    | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 14 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20, 19]      
+      [28, 24, 15, 11, 7]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
@@ -130,521 +130,521 @@ Player 1 | 0           | 14    | []                   | []
 Player 2 | 11          | 3     | []                   | []
 Player 3 | 12          | 2     | []                   | []
 Player 4 | 13          | 1     | []                   | []
-Player 5 | 14          | 0     | []                   | []
-Player 6 | 0           | 14    | [16]                 | []
+Player 5 | 7           | 10    | [2]                  | []
+Player 6 | 14          | 0     | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25, 20]      
+      [28, 24, 15, 11]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 14    | [19]                 | []
+Player 1 | 0           | 14    | [7]                  | []
 Player 2 | 11          | 3     | []                   | []
 Player 3 | 12          | 2     | []                   | []
 Player 4 | 13          | 1     | []                   | []
-Player 5 | 14          | 0     | []                   | []
-Player 6 | 0           | 14    | [16]                 | []
+Player 5 | 7           | 10    | [2]                  | []
+Player 6 | 14          | 0     | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26, 25]      
+      [28, 24, 15]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 14    | [19]                 | []
-Player 2 | 11          | 8     | [20]                 | []
+Player 1 | 0           | 14    | [7]                  | []
+Player 2 | 11          | 8     | [11]                 | []
 Player 3 | 12          | 2     | []                   | []
 Player 4 | 13          | 1     | []                   | []
-Player 5 | 14          | 0     | []                   | []
-Player 6 | 0           | 14    | [16]                 | []
+Player 5 | 7           | 10    | [2]                  | []
+Player 6 | 14          | 0     | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [28, 26]      
+      [28, 24]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 14    | [19]                 | []
-Player 2 | 11          | 8     | [20]                 | []
-Player 3 | 12          | 8     | [25]                 | []
+Player 1 | 0           | 14    | [7]                  | []
+Player 2 | 11          | 8     | [11]                 | []
+Player 3 | 12          | 8     | [15]                 | []
 Player 4 | 13          | 1     | []                   | []
-Player 5 | 14          | 0     | []                   | []
-Player 6 | 0           | 14    | [16]                 | []
+Player 5 | 7           | 10    | [2]                  | []
+Player 6 | 14          | 0     | []                   | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15, 13, 7, 5, 2]      
+      [25, 14, 13, 9, 6, 5]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 14    | [19]                 | []
-Player 2 | 0           | 8     | [20]                 | []
-Player 3 | 0           | 8     | [25]                 | []
-Player 4 | 0           | 7     | [26]                 | []
-Player 5 | 0           | 0     | [28]                 | []
-Player 6 | 0           | 14    | [16]                 | []
+Player 1 | 0           | 14    | [7]                  | []
+Player 2 | 0           | 8     | [11]                 | []
+Player 3 | 0           | 8     | [15]                 | []
+Player 4 | 0           | 7     | [24]                 | []
+Player 5 | 0           | 10    | [2]                  | []
+Player 6 | 0           | 0     | [28]                 | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15, 13, 7, 5]      
+      [25, 14, 13, 9, 6]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 14    | [19]                 | []
-Player 2 | 0           | 8     | [20]                 | []
-Player 3 | 0           | 8     | [25]                 | []
-Player 4 | 0           | 7     | [26]                 | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 14    | [16]                 | []
+Player 1 | 0           | 14    | [7]                  | []
+Player 2 | 0           | 8     | [11]                 | []
+Player 3 | 0           | 8     | [15]                 | []
+Player 4 | 0           | 7     | [24]                 | []
+Player 5 | 0           | 10    | [2]                  | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 11 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 14 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15, 13, 7, 5]      
+      [25, 14, 13, 9, 6]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 14    | [19]                 | []
-Player 2 | 0           | 8     | [20]                 | []
-Player 3 | 0           | 8     | [25]                 | []
-Player 4 | 0           | 7     | [26]                 | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 11          | 3     | [16]                 | []
+Player 1 | 14          | 0     | [7]                  | []
+Player 2 | 0           | 8     | [11]                 | []
+Player 3 | 0           | 8     | [15]                 | []
+Player 4 | 0           | 7     | [24]                 | []
+Player 5 | 0           | 10    | [2]                  | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 12 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15, 13, 7, 5]      
+      [25, 14, 13, 9]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 12          | 2     | [19]                 | []
-Player 2 | 0           | 8     | [20]                 | []
-Player 3 | 0           | 8     | [25]                 | []
-Player 4 | 0           | 7     | [26]                 | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 11          | 3     | [16]                 | []
+Player 1 | 14          | 0     | [7]                  | []
+Player 2 | 0           | 8     | [6, 11]              | []
+Player 3 | 0           | 8     | [15]                 | []
+Player 4 | 0           | 7     | [24]                 | []
+Player 5 | 0           | 10    | [2]                  | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15, 13, 7]      
+      [25, 14, 13]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 12          | 2     | [19]                 | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [25]                 | []
-Player 4 | 0           | 7     | [26]                 | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 11          | 3     | [16]                 | []
+Player 1 | 14          | 0     | [7]                  | []
+Player 2 | 0           | 8     | [6, 11]              | []
+Player 3 | 0           | 8     | [9, 15]              | []
+Player 4 | 0           | 7     | [24]                 | []
+Player 5 | 0           | 10    | [2]                  | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15, 13]      
+      [25, 14]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 12          | 2     | [19]                 | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [26]                 | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 11          | 3     | [16]                 | []
+Player 1 | 14          | 0     | [7]                  | []
+Player 2 | 0           | 8     | [6, 11]              | []
+Player 3 | 0           | 8     | [9, 15]              | []
+Player 4 | 0           | 7     | [13, 24]             | []
+Player 5 | 0           | 10    | [2]                  | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15]      
+      [29, 27, 21, 20, 10, 4]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 12          | 2     | [19]                 | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 11          | 3     | [16]                 | []
+Player 1 | 0           | 0     | [7, 25]              | []
+Player 2 | 0           | 8     | [6, 11]              | []
+Player 3 | 0           | 8     | [9, 15]              | []
+Player 4 | 0           | 7     | [13, 24]             | []
+Player 5 | 0           | 10    | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 3 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [27, 15]      
+      [29, 27, 21, 20, 10]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 12          | 2     | [19]                 | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 14          | 0     | [16]                 | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 0           | 8     | [6, 11]              | []
+Player 3 | 0           | 8     | [9, 15]              | []
+Player 4 | 0           | 7     | [13, 24]             | []
+Player 5 | 0           | 10    | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 6 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24, 10, 8, 4, 3]      
+      [29, 27, 21, 20, 10]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 8     | [15, 19]             | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 0     | [16, 27]             | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 6           | 2     | [6, 11]              | []
+Player 3 | 0           | 8     | [9, 15]              | []
+Player 4 | 0           | 7     | [13, 24]             | []
+Player 5 | 0           | 10    | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 8 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24, 10, 8, 4]      
+      [29, 27, 21, 20, 10]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 8     | [15, 19]             | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 6           | 2     | [6, 11]              | []
+Player 3 | 8           | 0     | [9, 15]              | []
+Player 4 | 0           | 7     | [13, 24]             | []
+Player 5 | 0           | 10    | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 6 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24, 10, 8, 4]      
+      [29, 27, 21, 20]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 6           | 2     | [15, 19]             | []
-Player 2 | 0           | 8     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 6           | 2     | [6, 11]              | []
+Player 3 | 8           | 0     | [9, 15]              | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 10    | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 8 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 10 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24, 10, 8, 4]      
+      [29, 27, 21, 20]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 6           | 2     | [15, 19]             | []
-Player 2 | 8           | 0     | [5, 20]              | []
-Player 3 | 0           | 8     | [7, 25]              | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 6           | 2     | [6, 11]              | []
+Player 3 | 8           | 0     | [9, 15]              | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 10          | 0     | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 28]              | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24, 10, 8]      
+      [29, 27, 21]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 6           | 2     | [15, 19]             | []
-Player 2 | 8           | 0     | [5, 20]              | []
-Player 3 | 0           | 8     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [13, 26]             | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 6           | 2     | [6, 11]              | []
+Player 3 | 8           | 0     | [9, 15]              | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 10          | 0     | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 20, 28]          | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24, 10]      
+      [29, 27]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 6           | 2     | [15, 19]             | []
-Player 2 | 8           | 0     | [5, 20]              | []
-Player 3 | 0           | 8     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 26]          | []
-Player 5 | 0           | 0     | [2, 28]              | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 6           | 5     | [6, 11, 21]          | []
+Player 3 | 8           | 0     | [9, 15]              | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 10          | 0     | [2, 14]              | []
+Player 6 | 0           | 0     | [5, 20, 28]          | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [30, 24]      
+      [30, 22, 19, 17, 12, 3]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 6           | 2     | [15, 19]             | []
-Player 2 | 8           | 0     | [5, 20]              | []
-Player 3 | 0           | 8     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 26]          | []
-Player 5 | 0           | 0     | [2, 10, 28]          | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 0           | 5     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 27]          | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 14, 29]          | []
+Player 6 | 0           | 0     | [5, 20, 28]          | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [29, 23, 22, 17, 14, 11]      
+      [30, 22, 19, 17, 12]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 24]         | []
-Player 2 | 0           | 0     | [5, 20, 30]          | []
-Player 3 | 0           | 8     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 26]          | []
-Player 5 | 0           | 0     | [2, 10, 28]          | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 0           | 5     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 27]          | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 20, 28]          | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [29, 23, 22, 17, 14]      
+      [30, 22, 19, 17]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 24]         | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 8     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 26]          | []
-Player 5 | 0           | 0     | [2, 10, 28]          | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 25]           | []
+Player 2 | 0           | 5     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 27]          | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 8 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [29, 23, 22, 17, 14]      
+      [30, 22, 19]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 24]         | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 8           | 0     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 26]          | []
-Player 5 | 0           | 0     | [2, 10, 28]          | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 0           | 5     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 27]          | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 4 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [29, 23, 22, 17]      
+      [30, 22, 19]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 24]         | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 8           | 0     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 10, 28]          | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 4           | 1     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 27]          | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [29, 23, 22]      
+      [30, 22]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 24]         | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 8           | 0     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 10, 17, 28]      | []
-Player 6 | 0           | 0     | [3, 16, 27]          | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 4           | 1     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 7     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 7 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [29, 23]      
+      [30, 22]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 24]         | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 8           | 0     | [4, 7, 25]           | []
-Player 4 | 0           | 7     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 10, 17, 28]      | []
-Player 6 | 0           | 0     | [3, 16, 22, 27]      | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 4           | 1     | [6, 11, 21]          | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 7           | 0     | [10, 13, 24]         | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [21, 18, 12, 9, 6, 1]      
+      [26, 23, 18, 16, 8, 1]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 23, 24]     | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 0     | [4, 7, 25, 29]       | []
-Player 4 | 0           | 7     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 10, 17, 28]      | []
-Player 6 | 0           | 0     | [3, 16, 22, 27]      | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 0           | 3     | [6, 11, 21, 22]      | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 0     | [10, 13, 24, 30]     | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [21, 18, 12, 9, 6]      
+      [26, 23, 18, 16, 8]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 23, 24]     | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 0           | 7     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 10, 17, 28]      | []
-Player 6 | 0           | 0     | [3, 16, 22, 27]      | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 0           | 3     | [6, 11, 21, 22]      | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 14, 29]       | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 4 chose to add 4 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [21, 18, 12, 9, 6]      
+      [26, 23, 18, 16]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 23, 24]     | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 4           | 3     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 10, 17, 28]      | []
-Player 6 | 0           | 0     | [3, 16, 22, 27]      | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 0           | 3     | [6, 11, 21, 22]      | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 8, 14, 29]    | []
+Player 6 | 0           | 0     | [5, 12, 20, 28]      | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 5 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [21, 18, 12, 9]      
+      [26, 23, 18]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 23, 24]     | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 4           | 3     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 6, 10, 17, 28]   | []
-Player 6 | 0           | 0     | [3, 16, 22, 27]      | []
+Player 1 | 0           | 0     | [4, 7, 17, 25]       | []
+Player 2 | 0           | 3     | [6, 11, 21, 22]      | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 8, 14, 29]    | []
+Player 6 | 0           | 0     | [5, 12, 16, 20, 28]  | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 6 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [21, 18, 12]      
+      [26, 23]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [15, 19, 23, 24]     | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 4           | 3     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 6, 10, 17, 28]   | []
-Player 6 | 0           | 0     | [3, 9, 16, 22, 27]   | []
+Player 1 | 0           | 0     | [4, 7, 17, 18, 25]   | []
+Player 2 | 0           | 3     | [6, 11, 21, 22]      | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 8, 14, 29]    | []
+Player 6 | 0           | 0     | [5, 12, 16, 20, 28]  | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 1 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 3 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:56 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
 ------------------------------------
-      [21, 18]      
+      [26, 23]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [12, 15, 19, 23, 24] | []
-Player 2 | 0           | 0     | [5, 11, 20, 30]      | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 4           | 3     | [8, 13, 14, 26]      | []
-Player 5 | 0           | 0     | [2, 6, 10, 17, 28]   | []
-Player 6 | 0           | 0     | [3, 9, 16, 22, 27]   | []
+Player 1 | 0           | 0     | [4, 7, 17, 18, 25]   | []
+Player 2 | 3           | 0     | [6, 11, 21, 22]      | []
+Player 3 | 0           | 4     | [9, 15, 19, 27]      | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 8, 14, 29]    | []
+Player 6 | 0           | 0     | [5, 12, 16, 20, 28]  | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 2 chose to add 0 to their bid
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:68 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:59 - player 3 chose to add 0 to their bid
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:68 - 
 GameState Overview:
 ------------------------------------
 --------- Bid Auction ---------
@@ -653,127 +653,127 @@ GameState Overview:
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [12, 15, 19, 23, 24] | []
-Player 2 | 0           | 0     | [5, 11, 18, 20, 30]  | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 0           | 3     | [8, 13, 14, 21, 26]  | []
-Player 5 | 0           | 0     | [2, 6, 10, 17, 28]   | []
-Player 6 | 0           | 0     | [3, 9, 16, 22, 27]   | []
+Player 1 | 0           | 0     | [4, 7, 17, 18, 25]   | []
+Player 2 | 0           | 0     | [6, 11, 21, 22, 26]  | []
+Player 3 | 0           | 4     | [9, 15, 19, 23, 27]  | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 8, 14, 29]    | []
+Player 6 | 0           | 0     | [5, 12, 16, 20, 28]  | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:69 - 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:70 - ===== Starting Sell Phase =====
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:71 - 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:69 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:70 - ===== Starting Sell Phase =====
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:71 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
 GameState Overview:
 ------------------------------------
 --------- Sell Auction ---------
 ------------------------------------
-      [12, 10, 10, 9, 7, 0]      
+      [11, 11, 6, 6, 4, 3]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 0           | 5     | [12, 15, 19, 23, 24] | []
-Player 2 | 0           | 0     | [5, 11, 18, 20, 30]  | []
-Player 3 | 0           | 0     | [1, 4, 7, 25, 29]    | []
-Player 4 | 0           | 3     | [8, 13, 14, 21, 26]  | []
-Player 5 | 0           | 0     | [2, 6, 10, 17, 28]   | []
-Player 6 | 0           | 0     | [3, 9, 16, 22, 27]   | []
+Player 1 | 0           | 0     | [4, 7, 17, 18, 25]   | []
+Player 2 | 0           | 0     | [6, 11, 21, 22, 26]  | []
+Player 3 | 0           | 4     | [9, 15, 19, 23, 27]  | []
+Player 4 | 0           | 0     | [1, 10, 13, 24, 30]  | []
+Player 5 | 0           | 0     | [2, 3, 8, 14, 29]    | []
+Player 6 | 0           | 0     | [5, 12, 16, 20, 28]  | []
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 19
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 30
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 4
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 21
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 10
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 16
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 4
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 22
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 9
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 10
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 14
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 12
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
 GameState Overview:
 ------------------------------------
 --------- Sell Auction ---------
 ------------------------------------
-      [14, 12, 7, 6, 5, 4]      
+      [15, 12, 9, 4, 3, 2]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 19          | 5     | [12, 15, 19, 23, 24] | [10]
-Player 2 | 30          | 0     | [5, 11, 18, 20, 30]  | [12]
-Player 3 | 4           | 0     | [1, 4, 7, 25, 29]    | [0]
-Player 4 | 21          | 3     | [8, 13, 14, 21, 26]  | [10]
-Player 5 | 10          | 0     | [2, 6, 10, 17, 28]   | [7]
-Player 6 | 16          | 0     | [3, 9, 16, 22, 27]   | [9]
+Player 1 | 4           | 0     | [7, 17, 18, 25]      | [3]
+Player 2 | 22          | 0     | [6, 11, 21, 26]      | [11]
+Player 3 | 9           | 4     | [15, 19, 23, 27]     | [4]
+Player 4 | 10          | 0     | [1, 13, 24, 30]      | [6]
+Player 5 | 14          | 0     | [2, 3, 8, 29]        | [11]
+Player 6 | 12          | 0     | [5, 16, 20, 28]      | [6]
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 12
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 30
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 7
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 21
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 2
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 27
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 17
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 6
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 19
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 30
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 3
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 28
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
 GameState Overview:
 ------------------------------------
 --------- Sell Auction ---------
 ------------------------------------
-      [15, 15, 13, 8, 4, 3]      
+      [14, 13, 10, 5, 2, 0]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 12          | 5     | [12, 15, 19, 23, 24] | [6, 10]
-Player 2 | 30          | 0     | [5, 11, 18, 20, 30]  | [12, 14]
-Player 3 | 7           | 0     | [1, 4, 7, 25, 29]    | [0, 5]
-Player 4 | 21          | 3     | [8, 13, 14, 21, 26]  | [7, 10]
-Player 5 | 2           | 0     | [2, 6, 10, 17, 28]   | [4, 7]
-Player 6 | 27          | 0     | [3, 9, 16, 22, 27]   | [9, 12]
+Player 1 | 17          | 0     | [7, 18, 25]          | [3, 4]
+Player 2 | 6           | 0     | [11, 21, 26]         | [3, 11]
+Player 3 | 19          | 4     | [15, 23, 27]         | [4, 9]
+Player 4 | 30          | 0     | [1, 13, 24]          | [6, 15]
+Player 5 | 3           | 0     | [2, 8, 29]           | [2, 11]
+Player 6 | 28          | 0     | [5, 16, 20]          | [6, 12]
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 15
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 30
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 7
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 13
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 28
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 9
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 7
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 11
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 23
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 24
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 8
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 20
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
 GameState Overview:
 ------------------------------------
 --------- Sell Auction ---------
 ------------------------------------
-      [14, 13, 9, 8, 5, 2]      
+      [14, 12, 10, 8, 7, 0]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 15          | 5     | [12, 15, 19, 23, 24] | [6, 10, 13]
-Player 2 | 30          | 0     | [5, 11, 18, 20, 30]  | [12, 14, 15]
-Player 3 | 7           | 0     | [1, 4, 7, 25, 29]    | [0, 3, 5]
-Player 4 | 13          | 3     | [8, 13, 14, 21, 26]  | [7, 8, 10]
-Player 5 | 28          | 0     | [2, 6, 10, 17, 28]   | [4, 7, 15]
-Player 6 | 9           | 0     | [3, 9, 16, 22, 27]   | [4, 9, 12]
+Player 1 | 7           | 0     | [18, 25]             | [0, 3, 4]
+Player 2 | 11          | 0     | [21, 26]             | [3, 5, 11]
+Player 3 | 23          | 4     | [15, 27]             | [4, 9, 13]
+Player 4 | 24          | 0     | [1, 13]              | [6, 14, 15]
+Player 5 | 8           | 0     | [2, 29]              | [2, 2, 11]
+Player 6 | 20          | 0     | [5, 16]              | [6, 10, 12]
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 19
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 5
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 7
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 21
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 2
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 27
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 25
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 26
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 27
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 1
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 2
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 16
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:75 - Before Sell 
 GameState Overview:
 ------------------------------------
 --------- Sell Auction ---------
 ------------------------------------
-      [11, 11, 6, 3, 2, 0]      
+      [15, 13, 9, 8, 7, 5]      
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 19          | 5     | [12, 15, 19, 23, 24] | [6, 9, 10, 13]
-Player 2 | 5           | 0     | [5, 11, 18, 20, 30]  | [5, 12, 14, 15]
-Player 3 | 7           | 0     | [1, 4, 7, 25, 29]    | [0, 3, 5, 8]
-Player 4 | 21          | 3     | [8, 13, 14, 21, 26]  | [7, 8, 10, 13]
-Player 5 | 2           | 0     | [2, 6, 10, 17, 28]   | [2, 4, 7, 15]
-Player 6 | 27          | 0     | [3, 9, 16, 22, 27]   | [4, 9, 12, 14]
+Player 1 | 25          | 0     | [18]                 | [0, 3, 4, 10]
+Player 2 | 26          | 0     | [21]                 | [3, 5, 11, 12]
+Player 3 | 27          | 4     | [15]                 | [4, 9, 13, 14]
+Player 4 | 1           | 0     | [13]                 | [0, 6, 14, 15]
+Player 5 | 2           | 0     | [29]                 | [2, 2, 7, 11]
+Player 6 | 16          | 0     | [5]                  | [6, 8, 10, 12]
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 19
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 5
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 1
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 8
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 6
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 16
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:89 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 1 Randomly selected to Sell Property: 18
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 2 Randomly selected to Sell Property: 21
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 3 Randomly selected to Sell Property: 15
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 4 Randomly selected to Sell Property: 13
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 5 Randomly selected to Sell Property: 29
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:80 - player 6 Randomly selected to Sell Property: 5
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:89 - 
 GameState Overview:
 ------------------------------------
 --------- Sell Auction ---------
@@ -782,20 +782,20 @@ GameState Overview:
 ------------------------------------
   Player | Bids/Sales | Coins |      Properties      | Checks
 ------------------------------------
-Player 1 | 19          | 5     | [12, 15, 19, 23, 24] | [6, 9, 10, 11, 13]
-Player 2 | 5           | 0     | [5, 11, 18, 20, 30]  | [2, 5, 12, 14, 15]
-Player 3 | 1           | 0     | [1, 4, 7, 25, 29]    | [0, 0, 3, 5, 8]
-Player 4 | 8           | 3     | [8, 13, 14, 21, 26]  | [6, 7, 8, 10, 13]
-Player 5 | 6           | 0     | [2, 6, 10, 17, 28]   | [2, 3, 4, 7, 15]
-Player 6 | 16          | 0     | [3, 9, 16, 22, 27]   | [4, 9, 11, 12, 14]
+Player 1 | 18          | 0     | []                   | [0, 3, 4, 9, 10]
+Player 2 | 21          | 0     | []                   | [3, 5, 11, 12, 13]
+Player 3 | 15          | 4     | []                   | [4, 8, 9, 13, 14]
+Player 4 | 13          | 0     | []                   | [0, 6, 7, 14, 15]
+Player 5 | 29          | 0     | []                   | [2, 2, 7, 11, 15]
+Player 6 | 5           | 0     | []                   | [5, 6, 8, 10, 12]
 
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:90 - 
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:90 - 
  ===== Auctions have closed after 42 turns =====
-2024-08-25 18:40:55 [INFO] - auction_game\src\game_modes\standard.rs:94 - 
-Player 1: 54 points
-Player 2: 48 points
-Player 3: 16 points
-Player 4: 47 points
-Player 5: 31 points
-Player 6: 50 points
+2024-08-25 18:56:36 [INFO] - auction_game\src\game_modes\standard.rs:94 - 
+Player 1: 26 points
+Player 2: 44 points
+Player 3: 52 points
+Player 4: 42 points
+Player 5: 37 points
+Player 6: 41 points
 

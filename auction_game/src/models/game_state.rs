@@ -371,20 +371,18 @@ impl GameState {
             .collect();
         player_bids.sort_unstable_by(|a, b| a.1.cmp(&b.1));
 
-        for (player, _) in player_bids.iter() {
+        for (player, property) in player_bids.iter() {
             if let Some(check) = new_state.auction_pool.pop() {
                 new_state.insert_check_ascending(*player, check);
-                // if let Some(player_checks) = new_state.checks.get_mut(player) {
-                //     player_checks.push(check);
-                // } else {
-                //     debug_assert!(false, "Failed to get Player: {player}'s checks");
-                // }
             } else {
                 debug_assert!(
                     false,
                     "Failed to pop from auction_pool: {:?}",
                     new_state.auction_pool
                 );
+            }
+            if let Some(properties) = new_state.properties.get_mut(player) {
+                properties.retain(|&x| x != *property);
             }
         }
         if new_state.remaining_checks.len() > 0 {
