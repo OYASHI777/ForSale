@@ -23,7 +23,7 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn starting(no_players: u8) -> Self {
+    pub fn starting(no_players: u8, starting_player: u8) -> Self {
         debug_assert!(
             no_players < 7,
             "Please ensure no_players is < 7. It is currently {no_players}"
@@ -66,8 +66,7 @@ impl GameState {
             checks.insert(i, Vec::with_capacity(10));
         }
         let auction_properties: Vec<u8> = Vec::with_capacity(no_players as usize);
-        // TODO: Randomize
-        let current_decision_player: Option<u8> = Some(0);
+        let current_decision_player: Option<u8> = Some(starting_player);
         GameState {
             game_phase: GamePhase::Bid,
             no_players,
@@ -248,15 +247,6 @@ impl GameState {
         );
         let property: Property = self.auction_pool.pop().unwrap();
         self.insert_property_ascending(player, property);
-        // if let Some(player_properties) = self.properties.get_mut(&player) {
-        //     player_properties.push(self.auction_pool.pop().unwrap());
-        // } else {
-        //     debug_assert!(
-        //         false,
-        //         "Failed to find {player} in self.properties: {:?}",
-        //         self.properties
-        //     );
-        // }
     }
     pub fn win_bid(&mut self, player: Player) {
         debug_assert!(
@@ -319,10 +309,6 @@ impl GameState {
         debug_assert!(self.auction_pool.len() == 0, "Cannot reveal new auction while another auction has yet to end. Current auctio is: {:?}", self.auction_pool);
         match game_phase {
             GamePhase::Bid => {
-                // for _ in 0..self.no_players {
-                //     let new_property: Property = self.remaining_properties.pop().unwrap();
-                //     self.auction_pool.push(new_property);
-                // }
                 self.auction_pool.extend(
                     self.remaining_properties
                         .drain(self.remaining_properties.len() - self.no_players as usize..),
@@ -394,7 +380,6 @@ impl GameState {
         if self.remaining_properties.len() == 0
             && (self.remaining_checks.len() < 30 || self.auction_pool.len() == 0)
         {
-            // if self.remaining_properties.len() == 0 && self.auction_pool.len() == 0 {
             true
         } else {
             false
@@ -405,7 +390,6 @@ impl GameState {
             && self.remaining_properties.len() == 0
             && self.remaining_checks.len() == 0
         {
-            // if self.remaining_properties.len() == 0 && self.remaining_checks.len() == 0 {
             true
         } else {
             false
@@ -440,35 +424,6 @@ impl GameState {
     }
 }
 
-// impl fmt::Display for GameState {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         writeln!(f, "\nGameState Overview:")?;
-//         writeln!(f, "------------------------------------")?;
-//         writeln!(f, "--------- {} Auction ---------", self.game_phase)?;
-//         writeln!(f, "------------------------------------")?;
-//         writeln!(f, "      {:?}      ", self.auction_pool)?;
-//         writeln!(f, "------------------------------------")?;
-//         writeln!(f, "Player | Coins | Active Bids | Properties | Checks")?;
-//         writeln!(f, "------------------------------------")?;
-//         let empty_vec: Vec<Property> = vec![];
-//         for player_index in 0..self.no_players {
-//             let coins = self.coins.get(player_index as usize).unwrap_or(&0);
-//             let active_bid = self.active_bids.get(player_index as usize).unwrap_or(&0);
-//             let properties = self.properties.get(&player_index).unwrap_or(&empty_vec);
-//             let checks = self.checks.get(&player_index).unwrap_or(&empty_vec);
-//             writeln!(
-//                 f,
-//                 "Player {} | {} | {} | {:?} | {:?}",
-//                 player_index + 1,
-//                 coins,
-//                 active_bid,
-//                 properties,
-//                 checks,
-//             )?;
-//         }
-//         Ok(())
-//     }
-// }
 impl fmt::Display for GameState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\nGameState Overview:")?;

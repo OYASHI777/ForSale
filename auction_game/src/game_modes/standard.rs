@@ -44,8 +44,12 @@ impl Game for StandardGame {
             true => rng.gen_range(0..self.controllers.len() as u8),
         };
         let no_players: u8 = self.controllers.len() as u8;
-        let mut game_state = GameState::starting(no_players);
-        info!("Starting game: {}", self.game_id);
+        let mut game_state = GameState::starting(no_players, current_player);
+        info!(
+            "Starting game: {}|First player is player {}",
+            self.game_id,
+            current_player + 1
+        );
         info!("{game_state}");
         game_state.reveal_auction(GamePhase::Bid);
         let mut history: Vec<GameState> = Vec::with_capacity(100);
