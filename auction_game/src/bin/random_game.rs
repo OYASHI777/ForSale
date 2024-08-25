@@ -1,16 +1,33 @@
+use auction_game::engines::controllers::random_player::RandomPlayer;
+use auction_game::engines::traits::PlayerController;
+use auction_game::game_modes::standard::StandardGame;
+use auction_game::game_modes::traits::Game;
 use auction_game::models::enums::{GamePhase, Property};
 use auction_game::models::state::GameState;
 use helper::logger::init_logger;
 use log::{info, LevelFilter};
 use rand::prelude::IndexedRandom;
-use rand::seq::SliceRandom;
 use rand::thread_rng;
+
 // TODO: Add to github
 fn main() {
-
+    let no_players: u8 = 6;
+    let mut controllers: Vec<Box<dyn PlayerController>> = Vec::with_capacity(no_players as usize);
+    for id in 0..no_players as usize {
+        let controller: Box<RandomPlayer> =
+            Box::new(RandomPlayer::new(id as u8, format!("Player_{id}")));
+        controllers.push(controller);
+    }
+    let mut game = StandardGame::new(
+        "random_game".to_string(),
+        LevelFilter::Info,
+        controllers,
+        true,
+    );
+    game.game_run();
     // init_logger(LevelFilter::Debug, "rand_game");
     // let mut start_player: u8 = 0;
-    // let mut no_players: u8 = 6;
+    // let no_players: u8 = 6;
     // let mut game_state = GameState::starting(no_players);
     // info!("{game_state}");
     // game_state.reveal_auction(GamePhase::Bid);

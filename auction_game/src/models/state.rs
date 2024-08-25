@@ -1,6 +1,5 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
 use ahash::AHashMap;
-use log::debug;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::fmt;
@@ -45,8 +44,8 @@ impl GameState {
         };
         let mut coins: Vec<Coins> = Vec::with_capacity(no_players as usize);
         let mut active_players: Vec<bool> = Vec::with_capacity(no_players as usize);
-        let mut active_bids: Vec<u8> = vec![0; 6];
-        for i in 0..no_players {
+        let active_bids: Vec<u8> = vec![0; 6];
+        for _ in 0..no_players {
             coins.push(starting_coins);
             active_players.push(true);
         }
@@ -69,7 +68,7 @@ impl GameState {
         let auction_properties: Vec<u8> = Vec::with_capacity(no_players as usize);
         // TODO: Randomize
         let current_decision_player: Option<u8> = Some(0);
-        let mut state = GameState {
+        GameState {
             game_phase: GamePhase::Bid,
             no_players,
             coins,
@@ -83,12 +82,14 @@ impl GameState {
             remaining_checks,
             round_winner: None,
             round_no: 0,
-        };
-        state
+        }
     }
     pub fn current_player(&self) -> Player {
         // TODO: Consider changing for phase sell
         self.current_decision_player.unwrap()
+    }
+    pub fn game_phase(&self) -> GamePhase {
+        self.game_phase
     }
     pub fn add_coins(&mut self, player: Player, amount: u8) {
         debug_assert!(
@@ -160,6 +161,12 @@ impl GameState {
     }
     pub fn next_game_phase(&mut self) {
         self.game_phase = GamePhase::Sell;
+    }
+    pub fn legal_moves(&self, player: Player) -> Vec<u8> {
+        match self.game_phase() {
+            GamePhase::Bid => self.legal_moves_bid(player),
+            GamePhase::Sell => self.legal_moves_sell(player),
+        }
     }
     pub fn legal_moves_bid(&self, player: Player) -> Vec<Coins> {
         debug_assert!(

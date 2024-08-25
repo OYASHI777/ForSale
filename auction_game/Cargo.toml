@@ -13,4 +13,4 @@ log = "0.4.22"
 
 [[bin]]
 name = "test"
-path = "src/bin/test.rs"
+path = "src/bin/random_game.rs"

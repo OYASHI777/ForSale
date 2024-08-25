@@ -1,11 +1,16 @@
-use crate::{models, modes};
-use log::LevelFilter;
+use crate::game_modes::traits::Game;
+use crate::helper::generation::string_to_seed;
+use crate::models::enums::{Coins, GamePhase, Property};
+use crate::{engines, models};
+use engines::traits::PlayerController;
+use helper::logger::init_logger;
+use log::{info, LevelFilter};
 use models::state::GameState;
-use modes::traits::{Game, PlayerController};
 use rand::rngs::StdRng;
 use rand::Rng;
+use rand::SeedableRng;
 
-struct RandomGame {
+pub struct StandardGame {
     pub game_id: String,
     level_filter: LevelFilter,
     controllers: Vec<Box<dyn PlayerController>>,
@@ -13,14 +18,14 @@ struct RandomGame {
     //     TODO: At some point also indicate the GUI Logger/Interface
 }
 
-impl RandomGame {
+impl StandardGame {
     pub fn new(
         game_id: String,
         level_filter: LevelFilter,
         controllers: Vec<Box<dyn PlayerController>>,
         bool_random_starting_player: bool,
     ) -> Self {
-        RandomGame {
+        StandardGame {
             game_id,
             level_filter,
             controllers,
@@ -29,36 +34,36 @@ impl RandomGame {
     }
 }
 
-impl Game for RandomGame {
-    fn game_run() {
-        init_logger(self.game_id, &self.game_id);
+impl Game for StandardGame {
+    fn game_run(&mut self) {
+        init_logger(self.level_filter, &self.game_id);
         let seed = string_to_seed(&self.game_id);
         let mut rng = StdRng::seed_from_u64(seed);
-        let mut start_player: u8 = match self.bool_random_starting_player {
+        let mut current_player: u8 = match self.bool_random_starting_player {
             false => 0,
-            true => rng.gen_range(0..self.controllers.len()),
+            true => rng.gen_range(0..self.controllers.len() as u8),
         };
-        let mut no_players: u8 = self.controllers.len() as u8;
+        let no_players: u8 = self.controllers.len() as u8;
         let mut game_state = GameState::starting(no_players);
+        info!("Starting game: {}", self.game_id);
         info!("{game_state}");
         game_state.reveal_auction(GamePhase::Bid);
         let mut history: Vec<GameState> = Vec::with_capacity(100);
+
         while game_state.bid_phase_end() == false {
             // log game state
             history.push(game_state.clone());
             info!("{game_state}");
-            let move_choices = game_state.legal_moves_bid(start_player);
-            if let Some(random_item) = move_choices.choose(&mut rng) {
-                info!(
-                    "player {} chose to add {} to their bid",
-                    start_player + 1,
-                    random_item
-                );
-                game_state = game_state.generate_next_state_bid(start_player, *random_item);
-            } else {
-                panic!("The vector is empty.");
-            }
-            start_player = game_state.current_player();
+            let move_choice: Coins =
+                self.controllers[current_player as usize].decision(&game_state);
+            info!(
+                "player {} chose to add {} to their bid",
+                current_player + 1,
+                move_choice
+            );
+            game_state = game_state.generate_next_state_bid(current_player, move_choice);
+
+            current_player = game_state.current_player();
         }
         info!("{game_state}");
         info!("");
@@ -71,18 +76,13 @@ impl Game for RandomGame {
             let mut aggregate_sales: Vec<Property> = Vec::with_capacity(no_players as usize);
             for player in 0..no_players {
                 // TODO: Reference controller traits
-                let move_choices = game_state.legal_moves_sell(player);
-                let mut rng = thread_rng();
-                if let Some(random_item) = move_choices.choose(&mut rng) {
-                    info!(
-                        "player {} Randomly selected to Sell Property: {}",
-                        player + 1,
-                        random_item
-                    );
-                    aggregate_sales.push(*random_item);
-                } else {
-                    debug_assert!(false, "The vector is empty.");
-                }
+                let move_choice: Property = self.controllers[player as usize].decision(&game_state);
+                info!(
+                    "player {} Randomly selected to Sell Property: {}",
+                    player + 1,
+                    move_choice
+                );
+                aggregate_sales.push(move_choice);
             }
             game_state = game_state.generate_next_state_sell(aggregate_sales);
         }
