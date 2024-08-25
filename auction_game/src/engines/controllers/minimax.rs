@@ -1,5 +1,5 @@
 use crate::engines::traits::PlayerController;
-use crate::models::state::GameState;
+use crate::models::game_state::GameState;
 use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
 use rand::thread_rng;

@@ -15,5 +15,5 @@ pub mod helper {
 pub mod models {
     pub mod constants;
     pub mod enums;
-    pub mod state;
+    pub mod game_state;
 }

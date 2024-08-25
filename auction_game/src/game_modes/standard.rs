@@ -5,7 +5,7 @@ use crate::{engines, models};
 use engines::traits::PlayerController;
 use helper::logger::init_logger;
 use log::{info, LevelFilter};
-use models::state::GameState;
+use models::game_state::GameState;
 use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;

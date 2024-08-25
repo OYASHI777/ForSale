@@ -1,4 +1,4 @@
-use crate::models::state::GameState;
+use crate::models::game_state::GameState;
 
 pub trait PlayerController {
     fn nickname(&self) -> String;
