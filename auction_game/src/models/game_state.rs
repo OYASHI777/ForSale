@@ -5,7 +5,7 @@ use rand::thread_rng;
 use std::fmt;
 use std::fmt::Write;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GameState {
     game_phase: GamePhase,
     no_players: Player,
@@ -19,7 +19,8 @@ pub struct GameState {
     remaining_properties: Vec<Property>,
     remaining_checks: Vec<Check>,
     round_winner: Option<Player>,
-    round_no: u32,
+    round_no: u8,
+    turn_no: u32,
 }
 
 impl GameState {
@@ -80,7 +81,8 @@ impl GameState {
             remaining_properties,
             remaining_checks,
             round_winner: None,
-            round_no: 0,
+            round_no: 0, // 0 because it is incremented in reveal_auction
+            turn_no: 1,
         }
     }
     pub fn current_player(&self) -> Player {
@@ -110,6 +112,15 @@ impl GameState {
             &self.coins[player as usize]
         );
         self.coins[player as usize] -= amount;
+    }
+    pub fn turn_no(&self) -> u32 {
+        self.turn_no
+    }
+    pub fn add_turn_no(&mut self, amount: u32) {
+        self.turn_no += amount;
+    }
+    pub fn round_no(&self) -> u8 {
+        self.round_no
     }
     fn insert_in_order(vec: &mut Vec<u8>, value: u8) {
         match vec.binary_search(&value) {
@@ -307,6 +318,7 @@ impl GameState {
             );
         }
         debug_assert!(self.auction_pool.len() == 0, "Cannot reveal new auction while another auction has yet to end. Current auctio is: {:?}", self.auction_pool);
+        self.round_no += 1;
         match game_phase {
             GamePhase::Bid => {
                 self.auction_pool.extend(
@@ -341,6 +353,7 @@ impl GameState {
             new_state.raise_bid(player, action);
             new_state.current_decision_player = Some(new_state.next_player_bid());
         }
+        new_state.add_turn_no(1);
         new_state
     }
     pub fn generate_next_state_sell(&mut self, player_choices: Vec<Property>) -> Self {
@@ -374,6 +387,7 @@ impl GameState {
         if new_state.remaining_checks.len() > 0 {
             new_state.reveal_auction(GamePhase::Sell);
         }
+        new_state.add_turn_no(1);
         new_state
     }
     pub fn bid_phase_end(&self) -> bool {
@@ -427,7 +441,11 @@ impl GameState {
 impl fmt::Display for GameState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "\nGameState Overview:")?;
-        writeln!(f, "------------------------------------")?;
+        writeln!(
+            f,
+            "----Round: {}--- Turn: {}--",
+            self.round_no, self.turn_no
+        )?;
         writeln!(f, "--------- {} Auction ---------", self.game_phase)?;
         writeln!(f, "------------------------------------")?;
         writeln!(f, "      {:?}      ", self.auction_pool)?;

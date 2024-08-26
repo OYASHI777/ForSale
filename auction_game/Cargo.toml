@@ -12,5 +12,9 @@ helper = { path = "../helper" }
 log = "0.4.22"
 
 [[bin]]
-name = "test"
+name = "random_game"
 path = "src/bin/random_game.rs"
+
+[[bin]]
+name = "test_maximax"
+path = "src/bin/test_maximax.rs"

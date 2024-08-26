@@ -10,13 +10,6 @@ pub struct RandomPlayer {
     rng: ThreadRng,
 }
 
-impl RandomPlayer {
-    pub fn new(id: u8, nickname: String) -> Self {
-        let rng = thread_rng();
-        RandomPlayer { id, nickname, rng }
-    }
-}
-
 impl PlayerController for RandomPlayer {
     fn nickname(&self) -> String {
         self.nickname.clone()
@@ -29,5 +22,11 @@ impl PlayerController for RandomPlayer {
             self.id
         );
         *legal_moves.choose(&mut self.rng).unwrap()
+    }
+}
+impl RandomPlayer {
+    pub fn new(id: u8, nickname: String) -> Self {
+        let rng = thread_rng();
+        RandomPlayer { id, nickname, rng }
     }
 }

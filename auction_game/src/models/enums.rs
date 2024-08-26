@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum GamePhase {
     Bid,
     Sell,
