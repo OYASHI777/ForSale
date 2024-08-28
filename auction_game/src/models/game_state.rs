@@ -138,6 +138,9 @@ impl GameState {
     pub fn no_players(&self) -> u8 {
         self.no_players
     }
+    pub fn get_properties(&self) -> &AHashMap<Player, Vec<Property>> {
+        &self.properties
+    }
     pub fn get_player_properties(&self, player: Player) -> &Vec<Property> {
         debug_assert!(
             player < self.no_players,

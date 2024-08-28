@@ -1,5 +1,6 @@
+use crate::engines::controllers::constants::VALUE_PER_PROPERTY;
 use crate::engines::traits::PlayerController;
-use crate::models::enums::{GamePhase, Player};
+use crate::models::enums::{GamePhase, Player, Property};
 use crate::models::game_state::GameState;
 use ahash::AHashMap;
 use log::debug;
@@ -256,18 +257,58 @@ impl MaxNPlayer {
             "Cannot use round_score_function if round has not ended!"
         );
         // TODO: Expand beyond 6 players at some point
-        let scores: Vec<f32> = Vec::with_capacity(game_state.no_players() as usize);
+        let mut scores: Vec<f32> = vec![0.0; game_state.no_players() as usize];
         match game_state.game_phase() {
             GamePhase::Bid => {
-                todo!()
+                // For each property multiply by point
+                // Calculate the remaining properties/ remaining coins
+                // for each coin multiply by the ratio
+                let coins = game_state.get_coins();
+                let remaining_property_per_coin: f32 = game_state
+                    .get_remaining_properties()
+                    .iter()
+                    .map(|&prop| prop as f32)
+                    .sum::<f32>()
+                    / coins.iter().map(|&prop| prop as f32).sum::<f32>();
+                for i in 0..game_state.no_players() {
+                    let player_properties = game_state.get_player_properties(i);
+                    scores[i as usize] += VALUE_PER_PROPERTY
+                        * player_properties
+                            .iter()
+                            .map(|&prop| prop as f32)
+                            .sum::<f32>()
+                        + VALUE_PER_PROPERTY
+                            * remaining_property_per_coin
+                            * coins[i as usize] as f32;
+                }
             }
             GamePhase::Sell => {
-                todo!()
+                let properties: &AHashMap<Player, Vec<Property>> = game_state.get_properties();
+                let total_remaining_properties: f32 = properties
+                    .values()
+                    .flat_map(|props| props.iter())
+                    .map(|&prop| prop as f32)
+                    .sum::<f32>()
+                    .into();
+                let remaining_checks_per_property: f32 = game_state
+                    .get_remaining_checks()
+                    .iter()
+                    .map(|&prop| prop as f32)
+                    .sum::<f32>()
+                    / total_remaining_properties;
+                for i in 0..game_state.no_players() {
+                    let player_checks = game_state.get_player_checks(i);
+                    let player_properties = game_state.get_player_properties(i);
+                    scores[i as usize] +=
+                        player_checks.iter().map(|&prop| prop as f32).sum::<f32>()
+                            + remaining_checks_per_property
+                                * player_properties
+                                    .iter()
+                                    .map(|&prop| prop as f32)
+                                    .sum::<f32>();
+                }
             }
         }
-        for player in 0..6 {
-            let player_score: f32 = 0.0;
-        }
-        todo!()
+        scores
     }
 }
