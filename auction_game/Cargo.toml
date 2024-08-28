@@ -10,6 +10,7 @@ ahash = { workspace = true }
 rand = { workspace = true }
 helper = { path = "../helper" }
 log = "0.4.22"
+itertools = "0.13.0"
 
 [[bin]]
 name = "random_game"
@@ -18,3 +19,7 @@ path = "src/bin/random_game.rs"
 [[bin]]
 name = "test_maximax"
 path = "src/bin/test_maximax.rs"
+
+[[bin]]
+name = "disposable_box"
+path = "src/bin/disposable_box.rs"

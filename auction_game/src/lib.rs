@@ -1,5 +1,6 @@
 pub mod engines {
     pub mod controllers {
+        pub mod constants;
         pub mod maxn_player;
         pub mod random_player;
     }

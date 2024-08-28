@@ -1,6 +1,7 @@
 use crate::engines::traits::PlayerController;
-use crate::models::enums::Player;
+use crate::models::enums::{GamePhase, Player};
 use crate::models::game_state::GameState;
+use ahash::AHashMap;
 use log::debug;
 use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
@@ -54,7 +55,7 @@ impl MaxNPlayer {
             self.buffer.push((game_state, *action));
         }
         // Gamestate, scores, path_from_initial
-        let mut leaf_nodes_buffer: Vec<(GameState, u8, Vec<f32>)> = Vec::with_capacity(14);
+        let mut leaf_nodes_buffer: Vec<(GameState, u8, Vec<f32>)> = Vec::with_capacity(28);
         let print_buffer: Vec<u32> = self.buffer.iter().map(|(a, _)| a.turn_no()).collect();
         let print_leaf: Vec<u32> = leaf_nodes_buffer
             .iter()
@@ -150,5 +151,123 @@ impl MaxNPlayer {
             })
             .map(|(_, action, _)| *action)
             .unwrap()
+    }
+    pub fn maximax_round(
+        &mut self,
+        initial_state: &GameState,
+        rounds: u8,
+        random_sample: bool,
+        n_samples: u32,
+    ) -> u8 {
+        let parent_score_map: AHashMap<GameState, (u64, Vec<f32>)> =
+            AHashMap::with_capacity(100000);
+        // Score: parent_hash, node's gamestate
+        // GameState hash, Player Scores, number of child nodes remaining
+        let terminal_round: u8 = initial_state.round_no() + rounds;
+
+        let mut scores: AHashMap<u64, (GameState, Vec<f32>, usize)> =
+            AHashMap::with_capacity(100000);
+        let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
+        buffer.push(initial_state.clone());
+        while buffer.len() > 0 {
+            let mut leaf_state = buffer.pop().unwrap();
+            if leaf_state.auction_end() {
+                if leaf_state.round_no() == terminal_round
+                    || leaf_state.game_phase() == GamePhase::Sell
+                {
+                    // Terminal node, return score
+                    //     TODO: Abstract score function out later on
+                    let mut score = MaxNPlayer::round_score_function(&leaf_state);
+                    let mut child_hash: u64 = leaf_state.get_hash();
+                    let mut parent_hash = leaf_state.get_parent_hash();
+                    let parent_player = leaf_state.previous_player();
+                    let mut update_parent_further = true;
+                    let mut remove_from_scores = false;
+                    // Recursively update the score and remove child score
+                    // TODO: Keep child scores for auction_end() rounds only
+                    // TODO: When updating auction_end() scores that are not terminal, to use average (may need to count how many so far)
+                    while update_parent_further {
+                        if let Some((_parent_state, parent_score, remaining_children)) =
+                            scores.get_mut(&parent_hash)
+                        {
+                            let child_score = score.clone();
+                            if parent_score[parent_player as usize] < score[parent_player as usize]
+                            {
+                                // Update parent score
+                                *parent_score = child_score;
+                                *remaining_children -= 1;
+                                if *remaining_children < 1 {
+                                    remove_from_scores = true;
+                                } else {
+                                    update_parent_further = false;
+                                }
+                            }
+                        }
+                        {
+                            debug_assert!(false, "Should never reach here. scores should always have a parent_hash for DFS");
+                            update_parent_further = false;
+                        }
+                        if remove_from_scores {
+                            // parent state now is assigned to leaf state
+                            leaf_state = scores.remove(&parent_hash).unwrap().0;
+                            parent_hash = leaf_state.get_parent_hash();
+                            remove_from_scores = false;
+                        }
+                    }
+                } else {
+                    // Auction end but not terminal node => try every combo and average score
+                    let chances_leaves = leaf_state.reveal_auction_perms(random_sample, n_samples);
+                    scores.insert(
+                        leaf_state.get_hash(),
+                        (
+                            leaf_state.clone(),
+                            vec![f32::MIN; leaf_state.no_players() as usize],
+                            chances_leaves.len(),
+                        ),
+                    );
+                    buffer.extend(chances_leaves);
+                }
+            } else {
+                // Deepening and adding child nodes to buffer
+                // TODO: Abstract this
+                let legal_moves = leaf_state.legal_moves(leaf_state.current_player());
+                let mut child_states: Vec<GameState> = Vec::with_capacity(28);
+                for action in legal_moves {
+                    let child_state =
+                        leaf_state.manual_next_state_bid(leaf_state.current_player(), action);
+                    child_states.push(child_state);
+                }
+                scores.insert(
+                    leaf_state.get_hash(),
+                    (
+                        leaf_state.clone(),
+                        vec![f32::MIN; leaf_state.no_players() as usize],
+                        child_states.len(),
+                    ),
+                );
+                buffer.extend(child_states);
+            }
+        }
+        todo!()
+    }
+    fn round_score_function(game_state: &GameState) -> Vec<f32> {
+        debug_assert!(
+            game_state.auction_end() == true,
+            "Cannot use round_score_function if round has not ended!"
+        );
+        // TODO: Expand beyond 6 players at some point
+        let scores: Vec<f32> = Vec::with_capacity(game_state.no_players() as usize);
+        match game_state.game_phase() {
+            GamePhase::Bid => {
+                todo!()
+            }
+            GamePhase::Sell => {
+                todo!()
+            }
+        }
+        for player in 0..6 {
+            let player_score: f32 = 0.0;
+        }
+        todo!()
     }
 }

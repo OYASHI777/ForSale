@@ -1,9 +1,12 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
-use ahash::AHashMap;
-use rand::seq::SliceRandom;
+use ahash::AHasher;
+use ahash::{AHashMap, RandomState};
+use itertools::Itertools;
+use rand::seq::{IndexedRandom, SliceRandom};
 use rand::thread_rng;
 use std::fmt;
 use std::fmt::Write;
+use std::hash::{BuildHasher, Hash, Hasher};
 
 #[derive(Clone, Debug)]
 pub struct GameState {
@@ -12,6 +15,7 @@ pub struct GameState {
     coins: Vec<Coins>,
     properties: AHashMap<Player, Vec<Property>>,
     checks: AHashMap<Player, Vec<Check>>,
+    previous_decision_player: Option<u8>, // TODO: Validate previous player update logic
     current_decision_player: Option<u8>,
     active_players: Vec<bool>,
     active_bids: Vec<u8>,
@@ -21,6 +25,7 @@ pub struct GameState {
     round_winner: Option<Player>,
     round_no: u8,
     turn_no: u32,
+    parent_hash: u64,
 }
 
 impl GameState {
@@ -74,6 +79,7 @@ impl GameState {
             coins,
             properties,
             checks,
+            previous_decision_player: None,
             current_decision_player,
             active_players,
             active_bids,
@@ -83,7 +89,11 @@ impl GameState {
             round_winner: None,
             round_no: 0, // 0 because it is incremented in reveal_auction
             turn_no: 1,
+            parent_hash: 0,
         }
+    }
+    pub fn previous_player(&self) -> Player {
+        self.previous_decision_player.unwrap()
     }
     pub fn current_player(&self) -> Player {
         // TODO: Consider changing for phase sell
@@ -121,6 +131,52 @@ impl GameState {
     }
     pub fn round_no(&self) -> u8 {
         self.round_no
+    }
+    pub fn add_round_no(&mut self, amount: u8) {
+        self.round_no += amount;
+    }
+    pub fn no_players(&self) -> u8 {
+        self.no_players
+    }
+    pub fn get_player_properties(&self, player: Player) -> &Vec<Property> {
+        debug_assert!(
+            player < self.no_players,
+            "Player number of {player} too high! Keep it less than {}",
+            &self.no_players
+        );
+        &self.properties[&player]
+    }
+    pub fn get_player_coins(&self, player: Player) -> Coins {
+        debug_assert!(
+            player < self.no_players,
+            "Player number of {player} too high! Keep it less than {}",
+            &self.no_players
+        );
+        self.coins[player as usize]
+    }
+    pub fn get_player_checks(&self, player: Player) -> &Vec<Check> {
+        debug_assert!(
+            player < self.no_players,
+            "Player number of {player} too high! Keep it less than {}",
+            &self.no_players
+        );
+        &self.checks[&player]
+    }
+    pub fn get_remaining_checks(&self) -> &Vec<Check> {
+        &self.remaining_checks
+    }
+    pub fn get_remaining_properties(&self) -> &Vec<Property> {
+        &self.remaining_checks
+    }
+    pub fn get_coins(&self) -> &Vec<Coins> {
+        &self.coins
+    }
+    pub fn auction_end(&self) -> bool {
+        if self.auction_pool.len() == 0 {
+            true
+        } else {
+            false
+        }
     }
     fn insert_in_order(vec: &mut Vec<u8>, value: u8) {
         match vec.binary_search(&value) {
@@ -167,6 +223,7 @@ impl GameState {
         for activity in self.active_players.iter_mut() {
             *activity = true;
         }
+        self.previous_decision_player = self.current_decision_player;
         self.current_decision_player = self.round_winner;
     }
     pub fn bid_round_end(&self) -> bool {
@@ -178,6 +235,22 @@ impl GameState {
     }
     pub fn auction_properties_remaining(&self) -> u8 {
         self.auction_pool.len() as u8
+    }
+    pub fn get_hash(&self) -> u64 {
+        // Create an instance of AHasher with specific keys
+        let mut hasher = RandomState::with_seeds(12345, 67890, 11111, 22222).build_hasher();
+
+        // Hash the GameState
+        self.hash(&mut hasher);
+
+        // Return the computed hash value
+        hasher.finish()
+    }
+    pub fn get_parent_hash(&self) -> u64 {
+        self.parent_hash
+    }
+    pub fn set_parent_hash(&mut self, parent_hash: u64) {
+        self.parent_hash = parent_hash;
     }
     pub fn next_player_bid(&self) -> Player {
         debug_assert!(
@@ -267,9 +340,9 @@ impl GameState {
         self.round_winner = Some(player);
         self.take_card(player);
         self.reset_round();
-        if self.bid_phase_end() == false {
-            self.reveal_auction(GamePhase::Bid);
-        }
+        // if self.bid_phase_end() == false {
+        //     self.reveal_auction(GamePhase::Bid);
+        // }
     }
     pub fn fold_bid(&mut self, player: Player) {
         debug_assert!(
@@ -286,6 +359,7 @@ impl GameState {
         self.add_coins(player, coins_returned);
         self.take_card(player);
         self.player_now_inactive(player);
+        self.active_bids[player as usize] = 0;
     }
     pub fn raise_bid(&mut self, player: Player, amount: Coins) {
         debug_assert!(
@@ -301,8 +375,8 @@ impl GameState {
         self.remove_coins(player, amount);
         self.increase_bid(player, amount);
     }
-    pub fn reveal_auction(&mut self, game_phase: GamePhase) {
-        if game_phase == GamePhase::Bid {
+    pub fn reveal_auction(&mut self) {
+        if self.game_phase == GamePhase::Bid {
             debug_assert!(
                 self.remaining_properties.len() > self.no_players as usize - 1,
                 "Cannot reveal auction when you have {} properties remaining in the deck and {} players in total",
@@ -318,8 +392,7 @@ impl GameState {
             );
         }
         debug_assert!(self.auction_pool.len() == 0, "Cannot reveal new auction while another auction has yet to end. Current auctio is: {:?}", self.auction_pool);
-        self.round_no += 1;
-        match game_phase {
+        match self.game_phase {
             GamePhase::Bid => {
                 self.auction_pool.extend(
                     self.remaining_properties
@@ -328,9 +401,9 @@ impl GameState {
                 self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
             }
             GamePhase::Sell => {
-                if self.game_phase == GamePhase::Bid {
-                    self.game_phase = GamePhase::Sell;
-                }
+                // if self.game_phase == GamePhase::Bid {
+                //     self.game_phase = GamePhase::Sell;
+                // }
                 self.auction_pool.extend(
                     self.remaining_checks
                         .drain(self.remaining_checks.len() - self.no_players as usize..),
@@ -339,22 +412,113 @@ impl GameState {
             }
         }
     }
-    pub fn generate_next_state_bid(&self, player: Player, action: Coins) -> Self {
-        let mut new_state: GameState = self.clone();
-        if action == 0 {
-            // return coins and allocate property
-            new_state.fold_bid(player);
-            if new_state.auction_properties_remaining() == 1 {
-                new_state.win_bid(self.next_player_bid());
-            } else {
-                new_state.current_decision_player = Some(new_state.next_player_bid());
+    pub fn reveal_auction_perms(&self, random_sample: bool, n_sample: u32) -> Vec<Self> {
+        // TODO: Validate this function
+        debug_assert!(self.auction_pool.len() == 0, "Cannot reveal new auction while another auction has yet to end. Current auctio is: {:?}", self.auction_pool);
+        let mut results: Vec<GameState> = Vec::new();
+        let parent_hash: u64 = self.get_hash();
+        match self.game_phase {
+            GamePhase::Bid => {
+                debug_assert!(
+                    self.remaining_properties.len() > self.no_players as usize - 1,
+                    "Cannot reveal auction when you have {} properties remaining in the deck and {} players in total",
+                    self.remaining_properties.len(),
+                    self.no_players
+                );
+                if random_sample {
+                    let mut rng = thread_rng();
+                    for _ in 0..n_sample {
+                        let mut cloned_state = self.clone();
+                        let sampled_properties: Vec<u8> = cloned_state
+                            .remaining_properties
+                            .choose_multiple(&mut rng, self.no_players as usize)
+                            .cloned()
+                            .collect();
+                        cloned_state
+                            .remaining_properties
+                            .retain(|prop| !sampled_properties.contains(prop));
+                        cloned_state.auction_pool.extend(sampled_properties);
+                        cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+                        cloned_state.set_parent_hash(parent_hash);
+                        results.push(cloned_state);
+                    }
+                } else {
+                    let combinations = self
+                        .remaining_properties
+                        .iter()
+                        .combinations(self.no_players as usize);
+
+                    for combination in combinations {
+                        let mut cloned_state = self.clone();
+                        let sampled_properties: Vec<u8> =
+                            combination.into_iter().cloned().collect();
+                        cloned_state
+                            .remaining_properties
+                            .retain(|prop| !sampled_properties.contains(prop));
+                        cloned_state.auction_pool.extend(sampled_properties);
+                        cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+                        cloned_state.set_parent_hash(parent_hash);
+                        results.push(cloned_state);
+                    }
+                }
             }
-        } else {
-            new_state.raise_bid(player, action);
-            new_state.current_decision_player = Some(new_state.next_player_bid());
+            GamePhase::Sell => {
+                debug_assert!(
+                    self.remaining_checks.len() > self.no_players as usize - 1,
+                    "Cannot reveal auction when you have {} checks remaining in the deck and {} players in total",
+                    self.remaining_checks.len(),
+                    self.no_players
+                );
+                if random_sample {
+                    let mut rng = thread_rng();
+                    for _ in 0..n_sample {
+                        let mut cloned_state = self.clone();
+                        let sampled_properties: Vec<u8> = cloned_state
+                            .remaining_checks
+                            .choose_multiple(&mut rng, self.no_players as usize)
+                            .cloned()
+                            .collect();
+                        cloned_state
+                            .remaining_checks
+                            .retain(|prop| !sampled_properties.contains(prop));
+                        cloned_state.auction_pool.extend(sampled_properties);
+                        cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+                        cloned_state.set_parent_hash(parent_hash);
+                        results.push(cloned_state);
+                    }
+                } else {
+                    let combinations = self
+                        .remaining_checks
+                        .iter()
+                        .combinations(self.no_players as usize);
+
+                    for combination in combinations {
+                        let mut cloned_state = self.clone();
+                        let sampled_properties: Vec<u8> =
+                            combination.into_iter().cloned().collect();
+                        cloned_state
+                            .remaining_checks
+                            .retain(|prop| !sampled_properties.contains(prop));
+                        cloned_state.auction_pool.extend(sampled_properties);
+                        cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+                        cloned_state.set_parent_hash(parent_hash);
+                        results.push(cloned_state);
+                    }
+                }
+            }
         }
-        new_state.add_turn_no(1);
-        new_state
+        results
+    }
+    pub fn generate_next_state_bid(&self, player: Player, action: Coins) -> Self {
+        if self.auction_end() {
+            let mut new_state: GameState = self.clone();
+            let parent_hash = self.get_hash();
+            new_state.reveal_auction();
+            new_state.set_parent_hash(parent_hash);
+            new_state
+        } else {
+            self.manual_next_state_bid(player, action)
+        }
     }
     pub fn generate_next_state_sell(&mut self, player_choices: Vec<Property>) -> Self {
         debug_assert!(
@@ -363,7 +527,54 @@ impl GameState {
             self.no_players,
             player_choices.len()
         );
+        if self.auction_end() {
+            let mut new_state = self.clone();
+            let parent_hash = self.get_hash();
+            new_state.reveal_auction();
+            new_state.active_bids = vec![0; 6];
+            new_state.set_parent_hash(parent_hash);
+            new_state
+        } else {
+            self.manual_next_state_sell(player_choices)
+        }
+    }
+    pub fn manual_next_state_bid(&self, player: Player, action: Coins) -> Self {
+        let mut new_state: GameState = self.clone();
+        let parent_hash = self.get_hash();
+        new_state.set_parent_hash(parent_hash);
+        if action == 0 {
+            // return coins and allocate property
+            new_state.fold_bid(player);
+            if new_state.auction_properties_remaining() == 1 {
+                new_state.win_bid(self.next_player_bid());
+            } else {
+                new_state.previous_decision_player = new_state.current_decision_player;
+                new_state.current_decision_player = Some(new_state.next_player_bid());
+            }
+        } else {
+            new_state.raise_bid(player, action);
+            new_state.previous_decision_player = new_state.current_decision_player;
+            new_state.current_decision_player = Some(new_state.next_player_bid());
+        }
+        new_state.add_turn_no(1);
+        if new_state.auction_end() {
+            new_state.add_round_no(1);
+            if new_state.remaining_properties.len() == 0 {
+                new_state.game_phase = GamePhase::Sell;
+            }
+        }
+        new_state
+    }
+    pub fn manual_next_state_sell(&mut self, player_choices: Vec<Property>) -> Self {
+        debug_assert!(
+            player_choices.len() == self.no_players as usize,
+            "Length of player_choices should be {} not {}",
+            self.no_players,
+            player_choices.len()
+        );
         let mut new_state = self.clone();
+        let parent_hash = self.get_hash();
+        new_state.set_parent_hash(parent_hash);
         new_state.active_bids = player_choices.clone();
         let mut player_bids: Vec<(Player, Property)> = (0..self.no_players)
             .map(|i| (i, player_choices[i as usize]))
@@ -384,10 +595,8 @@ impl GameState {
                 properties.retain(|&x| x != *property);
             }
         }
-        if new_state.remaining_checks.len() > 0 {
-            new_state.reveal_auction(GamePhase::Sell);
-        }
         new_state.add_turn_no(1);
+        new_state.add_round_no(1);
         new_state
     }
     pub fn bid_phase_end(&self) -> bool {
@@ -435,6 +644,23 @@ impl GameState {
         }
 
         result
+    }
+}
+
+impl Hash for GameState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.coins.hash(state); // Hash the coins vector
+        for key in 0..6u8 {
+            if let Some(vec) = self.properties.get(&key) {
+                vec.hash(state);
+            }
+        }
+        for key in 0..6u8 {
+            if let Some(vec) = self.checks.get(&key) {
+                vec.hash(state);
+            }
+        }
+        self.auction_pool.hash(state); // Hash the auction_pool vector
     }
 }
 
