@@ -288,7 +288,13 @@ impl MaxNPlayer {
                         0,
                     ),
                 );
-                buffer.extend(child_states);
+                // TODO: remove clone its only for printing
+                let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
+                debug!("Before Deepening: {:?}", print_buffer);
+                buffer.extend(child_states.clone());
+                let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
+                debug!("Deepening: Adding child states: {:?}", child_states.len());
+                debug!("After Deepening: {:?}", print_buffer);
             }
         }
         if let Some(score) = scores.get(&initial_state.get_encoding()) {

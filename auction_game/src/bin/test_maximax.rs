@@ -21,6 +21,7 @@ fn test_maximax_depth() {
     player.maximax_depth(&game_state, 3);
 }
 fn test_maximax_round() {
+    // TODO: Log deepening, states added
     init_logger(LevelFilter::Debug, "test_maximax");
     let no_players: u8 = 6;
     let mut game_state = GameState::starting(no_players, 0);
