@@ -49,7 +49,7 @@ impl MaxNPlayer {
         debug!("Initial_state: {}", initial_state);
         let initial_turn_no = initial_state.turn_no();
         let current_player: Player = initial_state.current_player();
-        let mut actions: Vec<u8> = initial_state.legal_moves(current_player);
+        let actions: Vec<u8> = initial_state.legal_moves(current_player);
         for action in actions.iter().rev().skip(0) {
             // TODO: The initial state can sometimes be terminal right, to include it below
             let game_state = initial_state.generate_next_state_bid(current_player, *action);
@@ -71,10 +71,9 @@ impl MaxNPlayer {
                 // TODO: one state being terminal doesnt mean all states will be terminal
                 let turn_no = self.buffer.last().unwrap().0.turn_no();
                 loop {
-                    let mut bool_pop = false;
-                    if let state_turn_no = self.buffer.last().unwrap().0.turn_no() {
-                        bool_pop = state_turn_no == turn_no;
-                    }
+                    let bool_pop;
+                    let state_turn_no = self.buffer.last().unwrap().0.turn_no();
+                    bool_pop = state_turn_no == turn_no;
                     if bool_pop {
                         let pushed_state = self.buffer.pop().unwrap();
                         let score = self.score_function(&pushed_state.0);
@@ -96,7 +95,7 @@ impl MaxNPlayer {
             {
                 // Since leaf buffer contains nodes deeper than the buffer, the last buffer node is the parent of the leaf node
                 // Propogate Score
-                let mut parent_node = self.buffer.pop().unwrap();
+                let parent_node = self.buffer.pop().unwrap();
                 let current_player = parent_node.0.current_player();
                 let mut parent_scores: Vec<f32> = vec![f32::MIN; 6];
                 // Calculate score for parent node
@@ -120,7 +119,7 @@ impl MaxNPlayer {
                 debug!("Propagate leaf_nodes_buffer: {:?}", print_leaf);
             } else {
                 // Going deeper into the tree
-                let mut actions: Vec<u8> = game_state.0.legal_moves(game_state.0.current_player());
+                let actions: Vec<u8> = game_state.0.legal_moves(game_state.0.current_player());
                 for action in actions.iter().rev().skip(0) {
                     // TODO: treat differently if its terminal state
                     let next_game_state = game_state
@@ -159,14 +158,12 @@ impl MaxNPlayer {
         rounds: u8,
         random_sample: bool,
         n_samples: u32,
-    ) -> u8 {
-        let parent_score_map: AHashMap<GameState, (u64, Vec<f32>)> =
-            AHashMap::with_capacity(100000);
+    ) -> Vec<f32> {
         // Score: parent_hash, node's gamestate
-        // GameState hash, Player Scores, number of child nodes remaining
+        // GameState encoding, Player Scores, number of child nodes remaining
         let terminal_round: u8 = initial_state.round_no() + rounds;
 
-        let mut scores: AHashMap<u64, (GameState, Vec<f32>, usize)> =
+        let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
         let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
         buffer.push(initial_state.clone());
@@ -178,36 +175,73 @@ impl MaxNPlayer {
                 {
                     // Terminal node, return score
                     //     TODO: Abstract score function out later on
-                    let mut score = MaxNPlayer::round_score_function(&leaf_state);
-                    let mut child_hash: u64 = leaf_state.get_hash();
+                    let score = MaxNPlayer::round_score_function(&leaf_state);
                     let mut parent_hash = leaf_state.get_parent_hash();
                     let parent_player = leaf_state.previous_player();
                     let mut update_parent_further = true;
                     let mut remove_from_scores = false;
-                    // Recursively update the score and remove child score
-                    // TODO: Keep child scores for auction_end() rounds only
                     // TODO: When updating auction_end() scores that are not terminal, to use average (may need to count how many so far)
+                    debug!("Reached leaf node: {}", leaf_state.get_encoding());
+                    let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
+                    debug!("Terminal: {:?}", print_buffer);
+                    if leaf_state.round_no() == initial_state.round_no() + 1 {
+                        // Keeping scores for end of current round only.
+                        let round_end_hash: String = leaf_state.get_encoding();
+                        debug!("Inserting Score: {:?}", score);
+                        scores.insert(
+                            round_end_hash,
+                            (leaf_state.clone(), score.clone(), usize::MAX, 0),
+                        );
+                    }
+                    // Recursively update the score and remove child score
                     while update_parent_further {
-                        if let Some((_parent_state, parent_score, remaining_children)) =
-                            scores.get_mut(&parent_hash)
+                        debug!(
+                            "Updating parent_state scores.len(): {} scores: {:?}",
+                            scores.len(),
+                            scores
+                        );
+                        if let Some((
+                            parent_state,
+                            parent_score,
+                            remaining_children,
+                            mut average_count,
+                        )) = scores.get_mut(&parent_hash)
                         {
-                            let child_score = score.clone();
-                            if parent_score[parent_player as usize] < score[parent_player as usize]
-                            {
-                                // Update parent score
-                                *parent_score = child_score;
+                            debug!("Updating parent_state: {}", parent_state.get_encoding(),);
+                            if parent_state.auction_end() {
+                                // Averaging at chance node where new auction is randomly revealed
+                                debug!("Updating at auction end");
+                                for player in 0..parent_score.len() {
+                                    parent_score[player] = (parent_score[player]
+                                        * average_count as f32
+                                        + score[player])
+                                        / (average_count + 1) as f32;
+                                }
+                                average_count += 1;
+                            } else {
+                                // Maximax at deterministic node
+                                let child_score = score.clone();
+                                if parent_score[parent_player as usize]
+                                    < score[parent_player as usize]
+                                {
+                                    // Update parent score
+                                    *parent_score = child_score;
+                                }
                                 *remaining_children -= 1;
                                 if *remaining_children < 1 {
+                                    // Bool to handle removing score in code below
                                     remove_from_scores = true;
                                 } else {
                                     update_parent_further = false;
                                 }
                             }
-                        }
-                        {
+                        } else {
                             debug_assert!(false, "Should never reach here. scores should always have a parent_hash for DFS");
                             update_parent_further = false;
                         }
+                        // Only remove if it isn't a end of round node
+                        remove_from_scores = remove_from_scores
+                            && !(leaf_state.round_no() == initial_state.round_no() + 1);
                         if remove_from_scores {
                             // parent state now is assigned to leaf state
                             leaf_state = scores.remove(&parent_hash).unwrap().0;
@@ -217,13 +251,17 @@ impl MaxNPlayer {
                     }
                 } else {
                     // Auction end but not terminal node => try every combo and average score
+                    let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
+                    debug!("Auction End but not terminal: {:?}", print_buffer);
                     let chances_leaves = leaf_state.reveal_auction_perms(random_sample, n_samples);
+                    debug!("Inserting scores");
                     scores.insert(
-                        leaf_state.get_hash(),
+                        leaf_state.get_encoding(),
                         (
                             leaf_state.clone(),
                             vec![f32::MIN; leaf_state.no_players() as usize],
                             chances_leaves.len(),
+                            0,
                         ),
                     );
                     buffer.extend(chances_leaves);
@@ -231,6 +269,8 @@ impl MaxNPlayer {
             } else {
                 // Deepening and adding child nodes to buffer
                 // TODO: Abstract this
+                let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
+                debug!("Deepening: {:?}", print_buffer);
                 let legal_moves = leaf_state.legal_moves(leaf_state.current_player());
                 let mut child_states: Vec<GameState> = Vec::with_capacity(28);
                 for action in legal_moves {
@@ -238,18 +278,28 @@ impl MaxNPlayer {
                         leaf_state.manual_next_state_bid(leaf_state.current_player(), action);
                     child_states.push(child_state);
                 }
+                debug!("Inserting Scores");
                 scores.insert(
-                    leaf_state.get_hash(),
+                    leaf_state.get_encoding(),
                     (
                         leaf_state.clone(),
                         vec![f32::MIN; leaf_state.no_players() as usize],
                         child_states.len(),
+                        0,
                     ),
                 );
                 buffer.extend(child_states);
             }
         }
-        todo!()
+        if let Some(score) = scores.get(&initial_state.get_encoding()) {
+            score.1.clone()
+        } else {
+            debug_assert!(
+                false,
+                "Failed to find the initial state score in get_encoding"
+            );
+            panic!();
+        }
     }
     fn round_score_function(game_state: &GameState) -> Vec<f32> {
         debug_assert!(
@@ -309,6 +359,12 @@ impl MaxNPlayer {
                 }
             }
         }
+        debug_assert!(
+            scores.len() == game_state.no_players() as usize,
+            "Returning scores :{:?} is not equal to no_players: {}",
+            scores,
+            game_state.no_players()
+        );
         scores
     }
 }

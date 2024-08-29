@@ -1,5 +1,5 @@
 use crate::game_modes::traits::Game;
-use crate::models::enums::{Coins, GamePhase, Property};
+use crate::models::enums::{Coins, Property};
 use crate::{engines, models};
 use engines::traits::PlayerController;
 use helper::generation::string_to_seed;

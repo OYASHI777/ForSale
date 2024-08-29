@@ -1,12 +1,11 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
-use ahash::AHasher;
-use ahash::{AHashMap, RandomState};
+use ahash::AHashMap;
 use itertools::Itertools;
 use rand::seq::{IndexedRandom, SliceRandom};
 use rand::thread_rng;
 use std::fmt;
 use std::fmt::Write;
-use std::hash::{BuildHasher, Hash, Hasher};
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug)]
 pub struct GameState {
@@ -25,7 +24,7 @@ pub struct GameState {
     round_winner: Option<Player>,
     round_no: u8,
     turn_no: u32,
-    parent_hash: u64,
+    parent_hash: String,
 }
 
 impl GameState {
@@ -89,7 +88,7 @@ impl GameState {
             round_winner: None,
             round_no: 0, // 0 because it is incremented in reveal_auction
             turn_no: 1,
-            parent_hash: 0,
+            parent_hash: "".to_string(),
         }
     }
     pub fn previous_player(&self) -> Player {
@@ -239,21 +238,70 @@ impl GameState {
     pub fn auction_properties_remaining(&self) -> u8 {
         self.auction_pool.len() as u8
     }
-    pub fn get_hash(&self) -> u64 {
-        // Create an instance of AHasher with specific keys
-        let mut hasher = RandomState::with_seeds(12345, 67890, 11111, 22222).build_hasher();
+    pub fn get_encoding(&self) -> String {
+        let format_u8 = |num: u8| -> String { format!("{:02}", num) };
+        let coins_str = self
+            .coins
+            .iter()
+            .map(|&coin| format_u8(coin))
+            .collect::<Vec<_>>()
+            .join("");
 
-        // Hash the GameState
-        self.hash(&mut hasher);
+        let properties_str = self
+            .properties
+            .iter()
+            .map(|(_, props)| {
+                props
+                    .iter()
+                    .map(|&prop| format_u8(prop))
+                    .collect::<Vec<_>>()
+                    .join("")
+            })
+            .collect::<Vec<_>>()
+            .join("|");
 
-        // Return the computed hash value
-        hasher.finish()
+        let checks_str = self
+            .checks
+            .iter()
+            .map(|(_, checks)| {
+                checks
+                    .iter()
+                    .map(|&check| format_u8(check))
+                    .collect::<Vec<_>>()
+                    .join("")
+            })
+            .collect::<Vec<_>>()
+            .join("|");
+
+        let active_bids_str = self
+            .active_bids
+            .iter()
+            .map(|&bid| format_u8(bid))
+            .collect::<Vec<_>>()
+            .join("");
+
+        let auction_pool_str = self
+            .auction_pool
+            .iter()
+            .map(|&item| format_u8(item))
+            .collect::<Vec<_>>()
+            .join("");
+        // TODO: Streamline this abit more later prob dont need game_phase
+        format!(
+            "{}|c{}|p{}|ch{}|b{}|a{}",
+            self.game_phase,
+            coins_str,
+            properties_str,
+            checks_str,
+            active_bids_str,
+            auction_pool_str,
+        )
     }
-    pub fn get_parent_hash(&self) -> u64 {
-        self.parent_hash
+    pub fn get_parent_hash(&self) -> String {
+        self.parent_hash.clone()
     }
-    pub fn set_parent_hash(&mut self, parent_hash: u64) {
-        self.parent_hash = parent_hash;
+    pub fn set_parent_hash(&mut self, parent_hash: &str) {
+        self.parent_hash = parent_hash.to_string();
     }
     pub fn next_player_bid(&self) -> Player {
         debug_assert!(
@@ -419,7 +467,7 @@ impl GameState {
         // TODO: Validate this function
         debug_assert!(self.auction_pool.len() == 0, "Cannot reveal new auction while another auction has yet to end. Current auctio is: {:?}", self.auction_pool);
         let mut results: Vec<GameState> = Vec::new();
-        let parent_hash: u64 = self.get_hash();
+        let parent_hash: String = self.get_encoding();
         match self.game_phase {
             GamePhase::Bid => {
                 debug_assert!(
@@ -442,7 +490,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(parent_hash);
+                        cloned_state.set_parent_hash(&parent_hash);
                         results.push(cloned_state);
                     }
                 } else {
@@ -460,7 +508,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(parent_hash);
+                        cloned_state.set_parent_hash(&parent_hash);
                         results.push(cloned_state);
                     }
                 }
@@ -486,7 +534,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(parent_hash);
+                        cloned_state.set_parent_hash(&parent_hash);
                         results.push(cloned_state);
                     }
                 } else {
@@ -504,7 +552,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(parent_hash);
+                        cloned_state.set_parent_hash(&parent_hash);
                         results.push(cloned_state);
                     }
                 }
@@ -515,9 +563,9 @@ impl GameState {
     pub fn generate_next_state_bid(&self, player: Player, action: Coins) -> Self {
         if self.auction_end() {
             let mut new_state: GameState = self.clone();
-            let parent_hash = self.get_hash();
+            let parent_hash = self.get_encoding();
             new_state.reveal_auction();
-            new_state.set_parent_hash(parent_hash);
+            new_state.set_parent_hash(&parent_hash);
             new_state
         } else {
             self.manual_next_state_bid(player, action)
@@ -532,10 +580,10 @@ impl GameState {
         );
         if self.auction_end() {
             let mut new_state = self.clone();
-            let parent_hash = self.get_hash();
+            let parent_hash = self.get_encoding();
             new_state.reveal_auction();
             new_state.active_bids = vec![0; 6];
-            new_state.set_parent_hash(parent_hash);
+            new_state.set_parent_hash(&parent_hash);
             new_state
         } else {
             self.manual_next_state_sell(player_choices)
@@ -543,8 +591,8 @@ impl GameState {
     }
     pub fn manual_next_state_bid(&self, player: Player, action: Coins) -> Self {
         let mut new_state: GameState = self.clone();
-        let parent_hash = self.get_hash();
-        new_state.set_parent_hash(parent_hash);
+        let parent_hash = self.get_encoding();
+        new_state.set_parent_hash(&parent_hash);
         if action == 0 {
             // return coins and allocate property
             new_state.fold_bid(player);
@@ -576,8 +624,8 @@ impl GameState {
             player_choices.len()
         );
         let mut new_state = self.clone();
-        let parent_hash = self.get_hash();
-        new_state.set_parent_hash(parent_hash);
+        let parent_hash = self.get_encoding();
+        new_state.set_parent_hash(&parent_hash);
         new_state.active_bids = player_choices.clone();
         let mut player_bids: Vec<(Player, Property)> = (0..self.no_players)
             .map(|i| (i, player_choices[i as usize]))
@@ -652,18 +700,8 @@ impl GameState {
 
 impl Hash for GameState {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.coins.hash(state); // Hash the coins vector
-        for key in 0..6u8 {
-            if let Some(vec) = self.properties.get(&key) {
-                vec.hash(state);
-            }
-        }
-        for key in 0..6u8 {
-            if let Some(vec) = self.checks.get(&key) {
-                vec.hash(state);
-            }
-        }
-        self.auction_pool.hash(state); // Hash the auction_pool vector
+        let encoding = self.get_encoding();
+        encoding.hash(state);
     }
 }
 
