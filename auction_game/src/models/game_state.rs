@@ -247,31 +247,31 @@ impl GameState {
             .collect::<Vec<_>>()
             .join("");
 
-        let properties_str = self
-            .properties
-            .iter()
-            .map(|(_, props)| {
-                props
+        let properties_str = (0..self.no_players)
+            .map(|key| {
+                self.properties
+                    .get(&key)
+                    .unwrap() // Assuming the key always exists
                     .iter()
                     .map(|&prop| format_u8(prop))
                     .collect::<Vec<_>>()
                     .join("")
             })
             .collect::<Vec<_>>()
-            .join("|");
+            .join("-");
 
-        let checks_str = self
-            .checks
-            .iter()
-            .map(|(_, checks)| {
-                checks
+        let checks_str = (0..self.no_players)
+            .map(|key| {
+                self.checks
+                    .get(&key)
+                    .unwrap() // Assuming the key always exists
                     .iter()
                     .map(|&check| format_u8(check))
                     .collect::<Vec<_>>()
                     .join("")
             })
             .collect::<Vec<_>>()
-            .join("|");
+            .join("-");
 
         let active_bids_str = self
             .active_bids
@@ -297,7 +297,7 @@ impl GameState {
             auction_pool_str,
         )
     }
-    pub fn get_parent_hash(&self) -> String {
+    pub fn get_parent_encoding(&self) -> String {
         self.parent_hash.clone()
     }
     pub fn set_parent_hash(&mut self, parent_hash: &str) {
@@ -713,6 +713,8 @@ impl fmt::Display for GameState {
             "----Round: {}--- Turn: {}--",
             self.round_no, self.turn_no
         )?;
+        writeln!(f, "\nCurrent encode: {}", self.get_encoding())?;
+        writeln!(f, "\nParent encode: {}", self.get_parent_encoding())?;
         writeln!(f, "--------- {} Auction ---------", self.game_phase)?;
         writeln!(f, "------------------------------------")?;
         writeln!(f, "      {:?}      ", self.auction_pool)?;

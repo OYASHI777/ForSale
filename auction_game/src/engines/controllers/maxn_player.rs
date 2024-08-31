@@ -3,7 +3,7 @@ use crate::engines::traits::PlayerController;
 use crate::models::enums::{GamePhase, Player, Property};
 use crate::models::game_state::GameState;
 use ahash::AHashMap;
-use log::debug;
+use log::{debug, info, warn};
 use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
 use rand::thread_rng;
@@ -160,46 +160,68 @@ impl MaxNPlayer {
         n_samples: u32,
     ) -> Vec<f32> {
         // Score: parent_hash, node's gamestate
-        // GameState encoding, Player Scores, number of child nodes remaining
+        // GameState encoding, Player Scores, number of child nodes remaining, average count
         let terminal_round: u8 = initial_state.round_no() + rounds;
-
+        let mut leaf_node_count: u64 = 0;
+        let initial_state_encoding = initial_state.get_encoding();
         let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
         let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
-        buffer.push(initial_state.clone());
+        // TODO: find out why legal moves doesnt have action 0
+        for action in initial_state.legal_moves(initial_state.current_player()) {
+            buffer
+                .push(initial_state.manual_next_state_bid(initial_state.current_player(), action));
+        }
+        scores.insert(
+            initial_state.get_encoding(),
+            (
+                initial_state.clone(),
+                vec![f32::MIN; initial_state.no_players() as usize],
+                initial_state
+                    .legal_moves(initial_state.current_player())
+                    .len(),
+                0,
+            ),
+        );
         while buffer.len() > 0 {
             let mut leaf_state = buffer.pop().unwrap();
+            info!(
+                "LEAFSTATE: Current leaf_state: {}",
+                leaf_state.get_encoding()
+            );
             if leaf_state.auction_end() {
                 if leaf_state.round_no() == terminal_round
                     || leaf_state.game_phase() == GamePhase::Sell
                 {
                     // Terminal node, return score
+                    leaf_node_count += 1;
+                    if leaf_node_count % 50000 == 0 {
+                        println!(
+                            "Visited leaf_nodes: {}, buffer len: {}",
+                            leaf_node_count,
+                            buffer.len()
+                        );
+                    }
                     //     TODO: Abstract score function out later on
                     let score = MaxNPlayer::round_score_function(&leaf_state);
-                    let mut parent_hash = leaf_state.get_parent_hash();
+                    let mut parent_hash = leaf_state.get_parent_encoding();
+                    info!("TERMINAL: Current leaf_state's parent: {}", parent_hash);
                     let parent_player = leaf_state.previous_player();
                     let mut update_parent_further = true;
                     let mut remove_from_scores = false;
                     // TODO: When updating auction_end() scores that are not terminal, to use average (may need to count how many so far)
-                    debug!("Reached leaf node: {}", leaf_state.get_encoding());
                     let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                    debug!("Terminal: {:?}", print_buffer);
-                    if leaf_state.round_no() == initial_state.round_no() + 1 {
-                        // Keeping scores for end of current round only.
-                        let round_end_hash: String = leaf_state.get_encoding();
-                        debug!("Inserting Score: {:?}", score);
-                        scores.insert(
-                            round_end_hash,
-                            (leaf_state.clone(), score.clone(), usize::MAX, 0),
-                        );
-                    }
+                    // TODO: Temp block for testing only, uncomment later
+                    // if leaf_state.round_no() == initial_state.round_no() + 1 {
+                    //     // Keeping scores for end of current round only.
+                    //     let round_end_hash: String = leaf_state.get_encoding();
+                    //     scores.insert(
+                    //         round_end_hash,
+                    //         (leaf_state.clone(), score.clone(), usize::MAX, 0),
+                    //     );
+                    // }
                     // Recursively update the score and remove child score
                     while update_parent_further {
-                        debug!(
-                            "Updating parent_state scores.len(): {} scores: {:?}",
-                            scores.len(),
-                            scores
-                        );
                         if let Some((
                             parent_state,
                             parent_score,
@@ -207,10 +229,9 @@ impl MaxNPlayer {
                             mut average_count,
                         )) = scores.get_mut(&parent_hash)
                         {
-                            debug!("Updating parent_state: {}", parent_state.get_encoding(),);
+                            // debug!("Found parent_state: {}", parent_hash,);
                             if parent_state.auction_end() {
                                 // Averaging at chance node where new auction is randomly revealed
-                                debug!("Updating at auction end");
                                 for player in 0..parent_score.len() {
                                     parent_score[player] = (parent_score[player]
                                         * average_count as f32
@@ -220,6 +241,7 @@ impl MaxNPlayer {
                                 average_count += 1;
                             } else {
                                 // Maximax at deterministic node
+                                // debug!("Updating not at auction end");
                                 let child_score = score.clone();
                                 if parent_score[parent_player as usize]
                                     < score[parent_player as usize]
@@ -241,20 +263,37 @@ impl MaxNPlayer {
                         }
                         // Only remove if it isn't a end of round node
                         remove_from_scores = remove_from_scores
-                            && !(leaf_state.round_no() == initial_state.round_no() + 1);
+                            && (leaf_state.round_no() != initial_state.round_no() + 1)
+                            && (leaf_state.turn_no() != initial_state.turn_no() + 1); // Testing this next
+                        info!("PROPAGATING: Old parent state: {}", parent_hash);
+                        if parent_hash == initial_state_encoding {
+                            // Stop propagating deletions
+                            break;
+                        }
                         if remove_from_scores {
                             // parent state now is assigned to leaf state
                             leaf_state = scores.remove(&parent_hash).unwrap().0;
-                            parent_hash = leaf_state.get_parent_hash();
+                            parent_hash = leaf_state.get_parent_encoding();
                             remove_from_scores = false;
+                        } else {
+                            if let Some((state, _, _, _)) = scores.get(&parent_hash) {
+                                parent_hash = state.get_parent_encoding();
+                            } else {
+                                warn!("Unable to find: {} in scores", parent_hash);
+                                panic!();
+                            }
                         }
+                        info!("PROPAGATING: Next parent state: {}", parent_hash);
                     }
                 } else {
                     // Auction end but not terminal node => try every combo and average score
                     let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                    debug!("Auction End but not terminal: {:?}", print_buffer);
+                    debug!(
+                        "AUCTION_END: Auction End but not terminal: {:?}",
+                        print_buffer
+                    );
                     let chances_leaves = leaf_state.reveal_auction_perms(random_sample, n_samples);
-                    debug!("Inserting scores");
+                    debug!("AUCTION_END: Inserting scores");
                     scores.insert(
                         leaf_state.get_encoding(),
                         (
@@ -270,15 +309,21 @@ impl MaxNPlayer {
                 // Deepening and adding child nodes to buffer
                 // TODO: Abstract this
                 let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                debug!("Deepening: {:?}", print_buffer);
+                debug!("DEEPENING: {:?}", print_buffer);
                 let legal_moves = leaf_state.legal_moves(leaf_state.current_player());
+                debug!("DEEPENING: no_legal_moves: {}", legal_moves.len());
                 let mut child_states: Vec<GameState> = Vec::with_capacity(28);
+                // debug!("Legal Moves: {:?}", legal_moves);
                 for action in legal_moves {
                     let child_state =
                         leaf_state.manual_next_state_bid(leaf_state.current_player(), action);
                     child_states.push(child_state);
                 }
-                debug!("Inserting Scores");
+                debug!(
+                    "DEEPENING: Inserting state: {} with parent_state: {}",
+                    leaf_state.get_encoding(),
+                    leaf_state.get_parent_encoding()
+                );
                 scores.insert(
                     leaf_state.get_encoding(),
                     (
@@ -290,14 +335,31 @@ impl MaxNPlayer {
                 );
                 // TODO: remove clone its only for printing
                 let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                debug!("Before Deepening: {:?}", print_buffer);
+                debug!("DEEPENING: Before Deepening: {:?}", print_buffer);
                 buffer.extend(child_states.clone());
                 let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                debug!("Deepening: Adding child states: {:?}", child_states.len());
-                debug!("After Deepening: {:?}", print_buffer);
+                debug!(
+                    "DEEPENING: Deepening: Adding child states: {:?}",
+                    child_states.len()
+                );
+                debug!("DEEPENING: After Deepening: {:?}", print_buffer);
+            }
+        }
+        // TODO: remove
+        for action in initial_state.legal_moves(initial_state.current_player()) {
+            let next_state =
+                initial_state.manual_next_state_bid(initial_state.current_player(), action);
+            if let Some((_, score, _, _)) = scores.get(&next_state.get_encoding()) {
+                info!(
+                    "FINAL: Player : {}, Action: {action} Scores: {:?}",
+                    initial_state.current_player(),
+                    score
+                );
             }
         }
         if let Some(score) = scores.get(&initial_state.get_encoding()) {
+            println!("Ended with leaf_nodes count: {}", leaf_node_count);
+            info!("scores: {:?}", scores);
             score.1.clone()
         } else {
             debug_assert!(

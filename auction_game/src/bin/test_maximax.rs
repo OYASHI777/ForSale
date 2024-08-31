@@ -22,7 +22,7 @@ fn test_maximax_depth() {
 }
 fn test_maximax_round() {
     // TODO: Log deepening, states added
-    init_logger(LevelFilter::Debug, "test_maximax");
+    init_logger(LevelFilter::Info, "test_maximax");
     let no_players: u8 = 6;
     let mut game_state = GameState::starting(no_players, 0);
     game_state.reveal_auction();
