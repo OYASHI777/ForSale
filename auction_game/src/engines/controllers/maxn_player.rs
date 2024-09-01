@@ -159,6 +159,10 @@ impl MaxNPlayer {
         random_sample: bool,
         n_samples: u32,
     ) -> Vec<f32> {
+        // TODO: Proof read | Abstract
+        // TODO: Test LRUCaching after concurrency
+        // TODO: Path Dependent encoding
+        // TODO: Tune appropriate round depth for optimal plays to 2nd round for a few different start types...
         // Score: parent_hash, node's gamestate
         let terminal_round: u8 = initial_state.round_no() + rounds;
         let mut leaf_node_count: u64 = 0;
