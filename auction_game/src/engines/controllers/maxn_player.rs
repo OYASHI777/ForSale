@@ -167,7 +167,6 @@ impl MaxNPlayer {
         let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
         let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
-        // TODO: find out why legal moves doesnt have action 0
         for action in initial_state.legal_moves(initial_state.current_player()) {
             buffer
                 .push(initial_state.manual_next_state_bid(initial_state.current_player(), action));
@@ -198,28 +197,12 @@ impl MaxNPlayer {
                             buffer.len()
                         );
                     }
-                    info!(
-                        "TERMINAL LEAFSTATE: Current leaf_state: {}",
-                        leaf_state.get_encoding()
-                    );
                     //     TODO: Abstract score function out later on
                     let score = MaxNPlayer::round_score_function(&leaf_state);
                     let mut parent_hash = leaf_state.get_parent_encoding();
-                    info!("TERMINAL: Current leaf_state's parent: {}", parent_hash);
                     let parent_player = leaf_state.previous_player();
                     let mut update_parent_further = true;
                     let mut remove_from_scores = false;
-                    // TODO: When updating auction_end() scores that are not terminal, to use average (may need to count how many so far)
-                    let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                    // TODO: Temp block for testing only, uncomment later
-                    // if leaf_state.round_no() == initial_state.round_no() + 1 {
-                    //     // Keeping scores for end of current round only.
-                    //     let round_end_hash: String = leaf_state.get_encoding();
-                    //     scores.insert(
-                    //         round_end_hash,
-                    //         (leaf_state.clone(), score.clone(), usize::MAX, 0),
-                    //     );
-                    // }
                     // Recursively update the score and remove child score
                     while update_parent_further {
                         if let Some((
@@ -242,15 +225,11 @@ impl MaxNPlayer {
                                 average_count += 1;
                             } else {
                                 // Maximax at deterministic node
-                                // debug!("Updating not at auction end");
-                                let child_score = score.clone();
-                                // TODO: Parent player here is wrong
-                                // TODO: It should be redeclared every loop to be the new parent_player!
-                                if parent_score[parent_player as usize]
-                                    < score[parent_player as usize]
+                                if parent_score[parent_state.current_player() as usize]
+                                    < score[parent_state.current_player() as usize]
                                 {
-                                    // Update parent score
-                                    *parent_score = child_score;
+                                    // Update parent score with child score
+                                    *parent_score = score.clone();
                                 }
                                 *remaining_children -= 1;
                                 if *remaining_children < 1 {
@@ -273,6 +252,7 @@ impl MaxNPlayer {
                             parent_hash
                         );
                         // TODO: Print the scores
+                        // TODO: Check if we are over propagating. We only really need to propagate when counter of child is 0
                         if parent_hash == initial_state_encoding {
                             // Stop propagating deletions
                             break;
@@ -297,6 +277,7 @@ impl MaxNPlayer {
                     }
                 } else {
                     // Auction end but not terminal node => try every combo and average score
+                    // This part is not computationally feasible LOL
                     let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
                     debug!(
                         "AUCTION_END: Auction End but not terminal: {:?}",
@@ -338,7 +319,7 @@ impl MaxNPlayer {
                 buffer.extend(child_states);
             }
         }
-        // TODO: remove
+        // TODO: Figure a way to store and display this
         for action in initial_state.legal_moves(initial_state.current_player()) {
             let next_state =
                 initial_state.manual_next_state_bid(initial_state.current_player(), action);

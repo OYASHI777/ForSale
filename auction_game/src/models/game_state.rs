@@ -1,6 +1,7 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
 use ahash::AHashMap;
 use itertools::Itertools;
+use log::{debug, info};
 use rand::seq::{IndexedRandom, SliceRandom};
 use rand::thread_rng;
 use std::fmt;
@@ -459,6 +460,48 @@ impl GameState {
                     self.remaining_checks
                         .drain(self.remaining_checks.len() - self.no_players as usize..),
                 );
+                self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+            }
+        }
+    }
+    pub fn reveal_auction_manual(&mut self, values: Vec<u8>) {
+        // Ensure that we are in the correct game phase
+        if self.game_phase == GamePhase::Bid {
+            debug_assert!(
+                self.remaining_properties.len() > self.no_players as usize - 1,
+                "Cannot reveal auction when you have {} properties remaining in the deck and {} players in total",
+                self.remaining_properties.len(),
+                self.no_players
+            );
+        } else {
+            debug_assert!(
+                self.remaining_checks.len() > self.no_players as usize - 1,
+                "Cannot reveal auction when you have {} checks remaining in the deck and {} players in total",
+                self.remaining_checks.len(),
+                self.no_players
+            );
+        }
+        debug_assert!(
+            self.auction_pool.is_empty(),
+            "Cannot reveal new auction while another auction has yet to end. Current auction is: {:?}",
+            self.auction_pool
+        );
+
+        match self.game_phase {
+            GamePhase::Bid => {
+                // Ensure all provided values exist in the remaining_properties
+                self.remaining_properties.retain(|x| !values.contains(x));
+
+                // Set the new auction_pool to the provided values
+                self.auction_pool = values;
+                self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+            }
+            GamePhase::Sell => {
+                // Ensure all provided values exist in the remaining_checks
+                self.remaining_checks.retain(|x| !values.contains(x));
+
+                // Set the new auction_pool to the provided values
+                self.auction_pool = values;
                 self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
             }
         }
