@@ -160,10 +160,10 @@ impl MaxNPlayer {
         n_samples: u32,
     ) -> Vec<f32> {
         // Score: parent_hash, node's gamestate
-        // GameState encoding, Player Scores, number of child nodes remaining, average count
         let terminal_round: u8 = initial_state.round_no() + rounds;
         let mut leaf_node_count: u64 = 0;
         let initial_state_encoding = initial_state.get_encoding();
+        // GameState encoding, Player Scores, number of child nodes remaining, average count
         let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
         let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
@@ -190,7 +190,7 @@ impl MaxNPlayer {
                 {
                     // Terminal node, return score
                     leaf_node_count += 1;
-                    if leaf_node_count % 50000 == 0 {
+                    if leaf_node_count % 500000 == 0 {
                         println!(
                             "Visited leaf_nodes: {}, buffer len: {}",
                             leaf_node_count,
@@ -234,7 +234,8 @@ impl MaxNPlayer {
                                 *remaining_children -= 1;
                                 if *remaining_children < 1 {
                                     // Bool to handle removing score in code below
-                                    remove_from_scores = true;
+                                    remove_from_scores = true
+                                        && parent_state.turn_no() != initial_state.turn_no() + 1;
                                 } else {
                                     update_parent_further = false;
                                 }
@@ -243,14 +244,7 @@ impl MaxNPlayer {
                             debug_assert!(false, "Should never reach here. scores should always have a parent_hash for DFS");
                             update_parent_further = false;
                         }
-                        // Only remove if it isn't a end of round node
-                        remove_from_scores = remove_from_scores
-                            && (leaf_state.round_no() != initial_state.round_no() + 1)
-                            && (leaf_state.turn_no() != initial_state.turn_no() + 1); // Testing this next
-                        info!(
-                            "PROPAGATING: Player {parent_player} Old parent state: {}",
-                            parent_hash
-                        );
+                        debug!("PROPAGATING: Old parent state: {}", parent_hash);
                         // TODO: Print the scores
                         // TODO: Check if we are over propagating. We only really need to propagate when counter of child is 0
                         if parent_hash == initial_state_encoding {
@@ -270,7 +264,7 @@ impl MaxNPlayer {
                                 panic!();
                             }
                         }
-                        info!(
+                        debug!(
                             "PROPAGATING: Player {parent_player} Next parent state: {}",
                             parent_hash
                         );
@@ -301,7 +295,6 @@ impl MaxNPlayer {
                 // TODO: Abstract this
                 let legal_moves = leaf_state.legal_moves(leaf_state.current_player());
                 let mut child_states: Vec<GameState> = Vec::with_capacity(28);
-                debug!("Legal Moves: {:?}", legal_moves);
                 for action in legal_moves {
                     let child_state =
                         leaf_state.manual_next_state_bid(leaf_state.current_player(), action);
@@ -329,6 +322,8 @@ impl MaxNPlayer {
                     initial_state.current_player(),
                     score
                 );
+            } else {
+                info!("FINAL: Scores not found");
             }
         }
         if let Some(score) = scores.get(&initial_state.get_encoding()) {
