@@ -161,9 +161,7 @@ impl MaxNPlayer {
     ) -> Vec<f32> {
         // TODO: Proof read | Abstract
         // TODO: Test LRUCaching after concurrency
-        // TODO: Path Dependent encoding
         // TODO: Tune appropriate round depth for optimal plays to 2nd round for a few different start types...
-        // Score: parent_hash, node's gamestate
         let terminal_round: u8 = initial_state.round_no() + rounds;
         let mut leaf_node_count: u64 = 0;
         let initial_path_encoding = initial_state.get_path_encoding();
@@ -284,13 +282,7 @@ impl MaxNPlayer {
                 } else {
                     // Auction end but not terminal node => try every combo and average score
                     // This part is not computationally feasible LOL
-                    let print_buffer: Vec<u32> = buffer.iter().map(|a| a.turn_no()).collect();
-                    debug!(
-                        "AUCTION_END: Auction End but not terminal: {:?}",
-                        print_buffer
-                    );
                     let chances_leaves = leaf_state.reveal_auction_perms(random_sample, n_samples);
-                    debug!("AUCTION_END: Inserting scores");
                     scores.insert(
                         leaf_state.get_path_encoding(),
                         (
