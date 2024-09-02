@@ -25,7 +25,7 @@ pub struct GameState {
     round_winner: Option<Player>,
     round_no: u8,
     turn_no: u32,
-    parent_hash: String,
+    path_encoding: String,
 }
 
 impl GameState {
@@ -89,7 +89,7 @@ impl GameState {
             round_winner: None,
             round_no: 0, // 0 because it is incremented in reveal_auction
             turn_no: 1,
-            parent_hash: "".to_string(),
+            path_encoding: "|O".to_string(), //O for Origin
         }
     }
     pub fn previous_player(&self) -> Player {
@@ -239,7 +239,36 @@ impl GameState {
     pub fn auction_properties_remaining(&self) -> u8 {
         self.auction_pool.len() as u8
     }
-    pub fn get_encoding(&self) -> String {
+    pub fn get_path_encoding(&self) -> String {
+        self.path_encoding.clone()
+    }
+    pub fn update_path_encoding_vec(&mut self, bool_reveal_cards: bool) {
+        // Vec must be sorted if its card reveal!
+        let encoded_str = if bool_reveal_cards {
+            self.auction_pool
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+                .join(":")
+        } else {
+            self.active_bids
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+                .join(":")
+        };
+
+        let update_string: String = match bool_reveal_cards {
+            true => format!("|R{encoded_str}"),  //R for reveal
+            false => format!("|S{encoded_str}"), //S for sale
+        };
+        self.path_encoding.push_str(&update_string);
+    }
+    pub fn update_path_encoding_action(&mut self, player: Player, action: u8) {
+        self.path_encoding.push_str(&format!("|{action}P{player}")); // Its action before player so I dont have to delimit it
+    }
+    pub fn get_state_encoding(&self) -> String {
+        // TODO: Add current decision player
         let format_u8 = |num: u8| -> String { format!("{:02}", num) };
         let coins_str = self
             .coins
@@ -287,7 +316,6 @@ impl GameState {
             .map(|&item| format_u8(item))
             .collect::<Vec<_>>()
             .join("");
-        // TODO: Streamline this abit more later prob dont need game_phase
         format!(
             "{}|c{}|p{}|ch{}|b{}|a{}",
             self.game_phase,
@@ -299,11 +327,18 @@ impl GameState {
         )
     }
     pub fn get_parent_encoding(&self) -> String {
-        self.parent_hash.clone()
+        // TODO: Change to getting parent from current path encoding
+        if let Some(pos) = self.path_encoding.rfind("|") {
+            self.path_encoding[..pos].to_string()
+        } else {
+            // This REAAALLY SHOULD NOT HAPPEN OR THE ENTIRE CODE IS WRONG
+            panic!()
+        }
     }
-    pub fn set_parent_hash(&mut self, parent_hash: &str) {
-        self.parent_hash = parent_hash.to_string();
-    }
+    // pub fn set_parent_hash(&mut self, parent_hash: &str) {
+    //     // TODO: Deprecate
+    //     self.path_encoding = parent_hash.to_string();
+    // }
     pub fn next_player_bid(&self) -> Player {
         debug_assert!(
             self.game_phase == GamePhase::Bid,
@@ -450,19 +485,16 @@ impl GameState {
                     self.remaining_properties
                         .drain(self.remaining_properties.len() - self.no_players as usize..),
                 );
-                self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
             }
             GamePhase::Sell => {
-                // if self.game_phase == GamePhase::Bid {
-                //     self.game_phase = GamePhase::Sell;
-                // }
                 self.auction_pool.extend(
                     self.remaining_checks
                         .drain(self.remaining_checks.len() - self.no_players as usize..),
                 );
-                self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
             }
         }
+        self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+        self.update_path_encoding_vec(true);
     }
     pub fn reveal_auction_manual(&mut self, values: Vec<u8>) {
         // Ensure that we are in the correct game phase
@@ -491,26 +523,20 @@ impl GameState {
             GamePhase::Bid => {
                 // Ensure all provided values exist in the remaining_properties
                 self.remaining_properties.retain(|x| !values.contains(x));
-
-                // Set the new auction_pool to the provided values
-                self.auction_pool = values;
-                self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
             }
             GamePhase::Sell => {
                 // Ensure all provided values exist in the remaining_checks
                 self.remaining_checks.retain(|x| !values.contains(x));
-
-                // Set the new auction_pool to the provided values
-                self.auction_pool = values;
-                self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
             }
         }
+        self.auction_pool = values;
+        self.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
+        self.update_path_encoding_vec(true);
     }
     pub fn reveal_auction_perms(&self, random_sample: bool, n_sample: u32) -> Vec<Self> {
         // TODO: Validate this function
         debug_assert!(self.auction_pool.len() == 0, "Cannot reveal new auction while another auction has yet to end. Current auctio is: {:?}", self.auction_pool);
         let mut results: Vec<GameState> = Vec::new();
-        let parent_hash: String = self.get_encoding();
         match self.game_phase {
             GamePhase::Bid => {
                 debug_assert!(
@@ -533,7 +559,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(&parent_hash);
+                        cloned_state.update_path_encoding_vec(true);
                         results.push(cloned_state);
                     }
                 } else {
@@ -551,7 +577,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(&parent_hash);
+                        cloned_state.update_path_encoding_vec(true);
                         results.push(cloned_state);
                     }
                 }
@@ -577,7 +603,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(&parent_hash);
+                        cloned_state.update_path_encoding_vec(true);
                         results.push(cloned_state);
                     }
                 } else {
@@ -595,7 +621,7 @@ impl GameState {
                             .retain(|prop| !sampled_properties.contains(prop));
                         cloned_state.auction_pool.extend(sampled_properties);
                         cloned_state.auction_pool.sort_unstable_by(|a, b| b.cmp(a));
-                        cloned_state.set_parent_hash(&parent_hash);
+                        cloned_state.update_path_encoding_vec(true);
                         results.push(cloned_state);
                     }
                 }
@@ -606,9 +632,7 @@ impl GameState {
     pub fn generate_next_state_bid(&self, player: Player, action: Coins) -> Self {
         if self.auction_end() {
             let mut new_state: GameState = self.clone();
-            let parent_hash = self.get_encoding();
             new_state.reveal_auction();
-            new_state.set_parent_hash(&parent_hash);
             new_state
         } else {
             self.manual_next_state_bid(player, action)
@@ -623,10 +647,8 @@ impl GameState {
         );
         if self.auction_end() {
             let mut new_state = self.clone();
-            let parent_hash = self.get_encoding();
             new_state.reveal_auction();
             new_state.active_bids = vec![0; 6];
-            new_state.set_parent_hash(&parent_hash);
             new_state
         } else {
             self.manual_next_state_sell(player_choices)
@@ -634,8 +656,6 @@ impl GameState {
     }
     pub fn manual_next_state_bid(&self, player: Player, action: Coins) -> Self {
         let mut new_state: GameState = self.clone();
-        let parent_hash = self.get_encoding();
-        new_state.set_parent_hash(&parent_hash);
         if action == 0 {
             // return coins and allocate property
             new_state.fold_bid(player);
@@ -657,6 +677,7 @@ impl GameState {
                 new_state.game_phase = GamePhase::Sell;
             }
         }
+        new_state.update_path_encoding_action(player, action);
         new_state
     }
     pub fn manual_next_state_sell(&mut self, player_choices: Vec<Property>) -> Self {
@@ -667,8 +688,6 @@ impl GameState {
             player_choices.len()
         );
         let mut new_state = self.clone();
-        let parent_hash = self.get_encoding();
-        new_state.set_parent_hash(&parent_hash);
         new_state.active_bids = player_choices.clone();
         let mut player_bids: Vec<(Player, Property)> = (0..self.no_players)
             .map(|i| (i, player_choices[i as usize]))
@@ -691,6 +710,7 @@ impl GameState {
         }
         new_state.add_turn_no(1);
         new_state.add_round_no(1);
+        new_state.update_path_encoding_vec(false);
         new_state
     }
     pub fn bid_phase_end(&self) -> bool {
@@ -743,7 +763,7 @@ impl GameState {
 
 impl Hash for GameState {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let encoding = self.get_encoding();
+        let encoding = self.get_state_encoding();
         encoding.hash(state);
     }
 }
@@ -756,8 +776,8 @@ impl fmt::Display for GameState {
             "----Round: {}--- Turn: {}--",
             self.round_no, self.turn_no
         )?;
-        writeln!(f, "\nCurrent encode: {}", self.get_encoding())?;
-        writeln!(f, "\nParent encode: {}", self.get_parent_encoding())?;
+        writeln!(f, "\nCurrent encode: {}", self.get_state_encoding())?;
+        writeln!(f, "\nPath encode: {}", self.get_path_encoding())?;
         writeln!(f, "--------- {} Auction ---------", self.game_phase)?;
         writeln!(f, "------------------------------------")?;
         writeln!(f, "      {:?}      ", self.auction_pool)?;

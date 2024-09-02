@@ -166,7 +166,7 @@ impl MaxNPlayer {
         // Score: parent_hash, node's gamestate
         let terminal_round: u8 = initial_state.round_no() + rounds;
         let mut leaf_node_count: u64 = 0;
-        let initial_state_encoding = initial_state.get_encoding();
+        let initial_path_encoding = initial_state.get_path_encoding();
         // GameState encoding, Player Scores, number of child nodes remaining, average count
         let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
@@ -176,7 +176,7 @@ impl MaxNPlayer {
                 .push(initial_state.manual_next_state_bid(initial_state.current_player(), action));
         }
         scores.insert(
-            initial_state.get_encoding(),
+            initial_state.get_path_encoding(),
             (
                 initial_state.clone(),
                 vec![f32::MIN; initial_state.no_players() as usize],
@@ -204,7 +204,6 @@ impl MaxNPlayer {
                     //     TODO: Abstract score function out later on
                     let score = MaxNPlayer::round_score_function(&leaf_state);
                     let mut parent_hash = leaf_state.get_parent_encoding();
-                    let parent_player = leaf_state.previous_player();
                     let mut update_parent_further = true;
                     let mut remove_from_scores = false;
                     // Recursively update the score and remove child score
@@ -251,27 +250,36 @@ impl MaxNPlayer {
                         debug!("PROPAGATING: Old parent state: {}", parent_hash);
                         // TODO: Print the scores
                         // TODO: Check if we are over propagating. We only really need to propagate when counter of child is 0
-                        if parent_hash == initial_state_encoding {
+                        if parent_hash == initial_path_encoding {
                             // Stop propagating deletions
                             break;
                         }
-                        if remove_from_scores {
-                            // parent state now is assigned to leaf state
-                            leaf_state = scores.remove(&parent_hash).unwrap().0;
-                            parent_hash = leaf_state.get_parent_encoding();
-                            remove_from_scores = false;
-                        } else {
-                            if let Some((state, _, _, _)) = scores.get(&parent_hash) {
-                                parent_hash = state.get_parent_encoding();
+                        // TODO: dont really need this part if update_parent_further is false...
+                        if update_parent_further {
+                            if remove_from_scores {
+                                leaf_state = scores.remove(&parent_hash).unwrap().0;
+                                parent_hash = leaf_state.get_parent_encoding();
+                                remove_from_scores = false;
                             } else {
-                                warn!("Unable to find: {} in scores", parent_hash);
-                                panic!();
+                                if let Some((state, _, _, _)) = scores.get(&parent_hash) {
+                                    debug!(
+                                        "Trying to get parent hash of the current node: {}",
+                                        parent_hash
+                                    );
+                                    parent_hash = state.get_parent_encoding();
+                                } else {
+                                    warn!(
+                                        "Unable to find the parent hash: {} in scores",
+                                        parent_hash
+                                    );
+                                    panic!();
+                                }
+                            }
+                        } else {
+                            if remove_from_scores {
+                                scores.remove(&parent_hash);
                             }
                         }
-                        debug!(
-                            "PROPAGATING: Player {parent_player} Next parent state: {}",
-                            parent_hash
-                        );
                     }
                 } else {
                     // Auction end but not terminal node => try every combo and average score
@@ -284,7 +292,7 @@ impl MaxNPlayer {
                     let chances_leaves = leaf_state.reveal_auction_perms(random_sample, n_samples);
                     debug!("AUCTION_END: Inserting scores");
                     scores.insert(
-                        leaf_state.get_encoding(),
+                        leaf_state.get_path_encoding(),
                         (
                             leaf_state.clone(),
                             vec![f32::MIN; leaf_state.no_players() as usize],
@@ -305,7 +313,7 @@ impl MaxNPlayer {
                     child_states.push(child_state);
                 }
                 scores.insert(
-                    leaf_state.get_encoding(),
+                    leaf_state.get_path_encoding(),
                     (
                         leaf_state.clone(),
                         vec![f32::MIN; leaf_state.no_players() as usize],
@@ -320,7 +328,7 @@ impl MaxNPlayer {
         for action in initial_state.legal_moves(initial_state.current_player()) {
             let next_state =
                 initial_state.manual_next_state_bid(initial_state.current_player(), action);
-            if let Some((_, score, _, _)) = scores.get(&next_state.get_encoding()) {
+            if let Some((_, score, _, _)) = scores.get(&next_state.get_path_encoding()) {
                 info!(
                     "FINAL: Player : {}, Action: {action} Scores: {:?}",
                     initial_state.current_player(),
@@ -330,7 +338,7 @@ impl MaxNPlayer {
                 info!("FINAL: Scores not found");
             }
         }
-        if let Some(score) = scores.get(&initial_state.get_encoding()) {
+        if let Some(score) = scores.get(&initial_state.get_path_encoding()) {
             println!("Ended with leaf_nodes count: {}", leaf_node_count);
             score.1.clone()
         } else {
