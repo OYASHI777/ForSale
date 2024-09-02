@@ -246,8 +246,6 @@ impl MaxNPlayer {
                             update_parent_further = false;
                         }
                         debug!("PROPAGATING: Old parent state: {}", parent_hash);
-                        // TODO: Print the scores
-                        // TODO: Check if we are over propagating. We only really need to propagate when counter of child is 0
                         if parent_hash == initial_path_encoding {
                             // Stop propagating deletions
                             break;
