@@ -1,7 +1,6 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
 use ahash::AHashMap;
 use itertools::Itertools;
-use log::{debug, info};
 use rand::seq::{IndexedRandom, SliceRandom};
 use rand::thread_rng;
 use std::fmt;
@@ -11,7 +10,7 @@ use std::hash::{Hash, Hasher};
 #[derive(Clone, Debug)]
 pub struct GameState {
     game_phase: GamePhase,
-    no_players: Player,
+    no_players: u8,
     coins: Vec<Coins>,
     properties: AHashMap<Player, Vec<Property>>,
     checks: AHashMap<Player, Vec<Check>>,
