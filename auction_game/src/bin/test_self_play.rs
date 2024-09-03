@@ -46,6 +46,8 @@ fn test_self_play() {
 fn replicate_issue() {
     // TODO: Log deepening, states added
     // SO basically if the next round to be considered after initial state is a terminal node, the node wont be in score because score is only added when propagating and not for terminal nodes
+    // 1 solution is to insert terminal node if 1 step from the starting node...
+    // please find neat and good solution
     init_logger(LevelFilter::Info, "maxn_issue0");
     let no_players: u8 = 6;
     let mut controllers: AHashMap<u8, MaxNPlayer> = AHashMap::with_capacity(no_players as usize);
