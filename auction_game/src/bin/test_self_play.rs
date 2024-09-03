@@ -6,8 +6,8 @@ use helper::logger::init_logger;
 use log::{info, LevelFilter};
 
 fn main() {
-    // test_self_play();
-    replicate_issue();
+    test_self_play();
+    // replicate_issue();
 }
 
 fn test_self_play() {

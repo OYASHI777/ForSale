@@ -67,10 +67,10 @@ impl MaxNPlayer {
             buffer
                 .push(initial_state.manual_next_state_bid(initial_state.current_player(), *action));
         }
-        info!(
-            "Looking through legal moves: {:?}",
-            initial_state.legal_moves(initial_state.current_player())
-        );
+        // info!(
+        //     "Looking through legal moves: {:?}",
+        //     initial_state.legal_moves(initial_state.current_player())
+        // );
         scores.insert(
             initial_state.get_path_encoding(),
             (
@@ -100,6 +100,19 @@ impl MaxNPlayer {
                     let mut parent_hash = leaf_state.get_parent_encoding();
                     let mut update_parent_further = true;
                     let mut remove_from_scores = false;
+                    // TODO: Review if this is most elegant |Fix for issue0
+                    if leaf_state.turn_no() == initial_state.turn_no() + 1 {
+                        scores.insert(
+                            leaf_state.get_path_encoding(),
+                            (
+                                leaf_state.clone(),
+                                Self::round_score_function(&leaf_state),
+                                0,
+                                0,
+                            ),
+                        );
+                    }
+
                     // Recursively update the score and remove child score
                     while update_parent_further {
                         if let Some((
@@ -133,14 +146,6 @@ impl MaxNPlayer {
                                     // Bool to handle removing score in code below
                                     remove_from_scores = true
                                         && parent_state.turn_no() != initial_state.turn_no() + 1;
-                                    if parent_hash
-                                        == "|O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5".to_string()
-                                    {
-                                        info!(
-                                            "remove_from_scores = true && {}",
-                                            parent_state.turn_no() != initial_state.turn_no() + 1
-                                        );
-                                    }
                                 } else {
                                     update_parent_further = false;
                                 }
@@ -152,17 +157,11 @@ impl MaxNPlayer {
                         debug!("PROPAGATING: Old parent state: {}", parent_hash);
                         if parent_hash == initial_path_encoding {
                             // Stop propagating deletions
-                            info!("breaking propagation");
                             break;
                         }
                         // TODO: dont really need this part if update_parent_further is false...
                         if update_parent_further {
                             if remove_from_scores {
-                                if parent_hash
-                                    == "|O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5".to_string()
-                                {
-                                    info!("A Removing |O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5 from scores");
-                                }
                                 leaf_state = scores.remove(&parent_hash).unwrap().0;
                                 parent_hash = leaf_state.get_parent_encoding();
                                 remove_from_scores = false;
@@ -183,11 +182,6 @@ impl MaxNPlayer {
                             }
                         } else {
                             if remove_from_scores {
-                                if parent_hash
-                                    == "|O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5".to_string()
-                                {
-                                    info!("B Removing |O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5 from scores");
-                                }
                                 scores.remove(&parent_hash);
                             }
                         }
@@ -218,10 +212,6 @@ impl MaxNPlayer {
                     buffer.push(child_state);
                     child_states_count += 1;
                 }
-                info!(
-                    "Inserting path encoding: {}",
-                    leaf_state.get_path_encoding()
-                );
                 scores.insert(
                     leaf_state.get_path_encoding(),
                     (
