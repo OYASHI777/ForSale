@@ -7,6 +7,7 @@ use log::{debug, info, warn};
 use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
 use rand::thread_rng;
+use std::time::Instant;
 
 pub struct MaxNPlayer {
     id: u8,
@@ -42,17 +43,18 @@ impl MaxNPlayer {
         }
     }
     pub fn maximax_round(
-        &mut self,
+        &self,
         initial_state: &GameState,
         rounds: u8,
         random_sample: bool,
         n_samples: u32,
-    ) -> Vec<f32> {
+    ) -> u8 {
         // TODO: Proof read | Abstract
         // TODO: Test LRUCaching after concurrency
         // TODO: Tune appropriate round depth for optimal plays to 2nd round for a few different start types...
         // TODO: use the self.buffer
         // TODO: Validate the averaging for later rounds
+        let start = Instant::now();
         let terminal_round: u8 = initial_state.round_no() + rounds;
         let mut leaf_node_count: u64 = 0;
         let initial_path_encoding = initial_state.get_path_encoding();
@@ -60,18 +62,21 @@ impl MaxNPlayer {
         let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
         let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
-        for action in initial_state.legal_moves(initial_state.current_player()) {
+        let legal_moves = initial_state.legal_moves(initial_state.current_player());
+        for action in &legal_moves {
             buffer
-                .push(initial_state.manual_next_state_bid(initial_state.current_player(), action));
+                .push(initial_state.manual_next_state_bid(initial_state.current_player(), *action));
         }
+        info!(
+            "Looking through legal moves: {:?}",
+            initial_state.legal_moves(initial_state.current_player())
+        );
         scores.insert(
             initial_state.get_path_encoding(),
             (
                 initial_state.clone(),
                 vec![f32::MIN; initial_state.no_players() as usize],
-                initial_state
-                    .legal_moves(initial_state.current_player())
-                    .len(),
+                legal_moves.len(),
                 0,
             ),
         );
@@ -128,6 +133,14 @@ impl MaxNPlayer {
                                     // Bool to handle removing score in code below
                                     remove_from_scores = true
                                         && parent_state.turn_no() != initial_state.turn_no() + 1;
+                                    if parent_hash
+                                        == "|O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5".to_string()
+                                    {
+                                        info!(
+                                            "remove_from_scores = true && {}",
+                                            parent_state.turn_no() != initial_state.turn_no() + 1
+                                        );
+                                    }
                                 } else {
                                     update_parent_further = false;
                                 }
@@ -139,11 +152,17 @@ impl MaxNPlayer {
                         debug!("PROPAGATING: Old parent state: {}", parent_hash);
                         if parent_hash == initial_path_encoding {
                             // Stop propagating deletions
+                            info!("breaking propagation");
                             break;
                         }
                         // TODO: dont really need this part if update_parent_further is false...
                         if update_parent_further {
                             if remove_from_scores {
+                                if parent_hash
+                                    == "|O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5".to_string()
+                                {
+                                    info!("A Removing |O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5 from scores");
+                                }
                                 leaf_state = scores.remove(&parent_hash).unwrap().0;
                                 parent_hash = leaf_state.get_parent_encoding();
                                 remove_from_scores = false;
@@ -164,6 +183,11 @@ impl MaxNPlayer {
                             }
                         } else {
                             if remove_from_scores {
+                                if parent_hash
+                                    == "|O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5".to_string()
+                                {
+                                    info!("B Removing |O|R30:5:4:3:2:1|9P0|0P1|0P2|0P3|0P4|0P5 from scores");
+                                }
                                 scores.remove(&parent_hash);
                             }
                         }
@@ -187,25 +211,32 @@ impl MaxNPlayer {
                 // Deepening and adding child nodes to buffer
                 // TODO: Abstract this
                 let legal_moves = leaf_state.legal_moves(leaf_state.current_player());
-                let mut child_states: Vec<GameState> = Vec::with_capacity(28);
+                let mut child_states_count: usize = 0;
                 for action in legal_moves {
                     let child_state =
                         leaf_state.manual_next_state_bid(leaf_state.current_player(), action);
-                    child_states.push(child_state);
+                    buffer.push(child_state);
+                    child_states_count += 1;
                 }
+                info!(
+                    "Inserting path encoding: {}",
+                    leaf_state.get_path_encoding()
+                );
                 scores.insert(
                     leaf_state.get_path_encoding(),
                     (
                         leaf_state.clone(),
                         vec![f32::MIN; leaf_state.no_players() as usize],
-                        child_states.len(),
+                        child_states_count,
                         0,
                     ),
                 );
-                buffer.extend(child_states);
             }
         }
         // TODO: Figure a way to store and display this
+        // TODO: Store the best action
+        let mut best_action: u8 = 0;
+        let mut best_score: f32 = f32::MIN;
         for action in initial_state.legal_moves(initial_state.current_player()) {
             let next_state =
                 initial_state.manual_next_state_bid(initial_state.current_player(), action);
@@ -215,20 +246,20 @@ impl MaxNPlayer {
                     initial_state.current_player(),
                     score
                 );
+                if best_score < score[initial_state.current_player() as usize] {
+                    best_action = action;
+                    best_score = score[initial_state.current_player() as usize];
+                }
             } else {
-                info!("FINAL: Scores not found");
+                info!(
+                    "FINAL: Scores not found for {}",
+                    next_state.get_path_encoding()
+                );
             }
         }
-        if let Some(score) = scores.get(&initial_state.get_path_encoding()) {
-            println!("Ended with leaf_nodes count: {}", leaf_node_count);
-            score.1.clone()
-        } else {
-            debug_assert!(
-                false,
-                "Failed to find the initial state score in get_encoding"
-            );
-            panic!();
-        }
+        info!("MAXN algo ran for: {:?}", start.elapsed());
+        info!("Ended with leaf_nodes count: {}", leaf_node_count);
+        best_action
     }
     fn round_score_function(game_state: &GameState) -> Vec<f32> {
         debug_assert!(

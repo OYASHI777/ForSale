@@ -23,3 +23,7 @@ path = "src/bin/test_maximax.rs"
 [[bin]]
 name = "disposable_box"
 path = "src/bin/disposable_box.rs"
+
+[[bin]]
+name = "test_self_play"
+path = "src/bin/test_self_play.rs"

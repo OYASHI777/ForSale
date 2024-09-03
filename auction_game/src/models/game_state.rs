@@ -1,6 +1,7 @@
 use crate::models::enums::{Check, Coins, GamePhase, Player, Property};
 use ahash::AHashMap;
 use itertools::Itertools;
+use log::info;
 use rand::seq::{IndexedRandom, SliceRandom};
 use rand::thread_rng;
 use std::fmt;
