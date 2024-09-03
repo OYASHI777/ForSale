@@ -34,7 +34,7 @@ fn test_self_play() {
         if let Some(player_control) = controllers.get_mut(&current_player) {
             best_move = player_control.maximax_round(&game_state, 1, false, 0);
         }
-        info!("Player: {} chose to do: {}", current_player, best_move);
+        info!("Player: {} chose to do: {}", current_player + 1, best_move);
         game_state = game_state.generate_next_state_bid(current_player, best_move);
     }
     info!("{game_state}");
