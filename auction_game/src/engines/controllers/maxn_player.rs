@@ -249,25 +249,6 @@ impl MaxNPlayer {
                 );
             }
         }
-        let round_2 =
-            initial_state.manual_next_state_bid(initial_state.current_player(), best_action);
-        if !round_2.auction_end() {
-            for action in round_2.legal_moves(round_2.current_player()) {
-                let next_state = round_2.manual_next_state_bid(round_2.current_player(), action);
-                if let Some((_, score, _, _)) = scores.get(&next_state.get_path_encoding()) {
-                    info!(
-                        "FINAL (Round 2): Player : {}, Action: {action} Scores: {:?}",
-                        round_2.current_player(),
-                        score
-                    );
-                } else {
-                    info!(
-                        "FINAL: Scores not found for {}",
-                        next_state.get_path_encoding()
-                    );
-                }
-            }
-        }
 
         info!("MAXN algo ran for: {:?}", start.elapsed());
         info!("Ended with leaf_nodes count: {}", leaf_node_count);
