@@ -1,13 +1,22 @@
 use ahash::AHashMap;
 use auction_game::engines::controllers::maxn_player::MaxNPlayer;
+use auction_game::game_modes::self_play::SelfPlay;
+use auction_game::game_modes::traits::Game;
 use auction_game::models::enums::GamePhase;
 use auction_game::models::game_state::GameState;
 use helper::logger::init_logger;
 use log::{info, LevelFilter};
 
 fn main() {
-    test_self_play();
-    // replicate_issue();
+    // TODO: Test searching more than 1 node
+    let mut id: u32 = 20;
+    init_logger(LevelFilter::Info, "DB2 Release Test Self Play");
+    while id < 10000 {
+        let mut self_play_game =
+            SelfPlay::new(format!("Test_{id}").to_string(), LevelFilter::Info, true);
+        self_play_game.game_run();
+        id += 1;
+    }
 }
 
 fn test_self_play() {
@@ -20,7 +29,7 @@ fn test_self_play() {
     }
     let mut game_state = GameState::starting(no_players, 0);
     info!("GameState: {}", game_state);
-    game_state.reveal_auction_manual(vec![1, 2, 3, 4, 5, 30]);
+    game_state.reveal_auction();
     let mut last_round = game_state.round_no();
     while game_state.bid_phase_end() == false {
         info!("{game_state}");

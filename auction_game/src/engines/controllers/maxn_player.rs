@@ -96,7 +96,7 @@ impl MaxNPlayer {
                         );
                     }
                     //     TODO: Abstract score function out later on
-                    let score = MaxNPlayer::round_score_function(&leaf_state);
+                    let mut score = MaxNPlayer::round_score_function(&leaf_state);
                     let mut parent_hash = leaf_state.get_parent_encoding();
                     let mut update_parent_further = true;
                     let mut remove_from_scores = false;
@@ -125,7 +125,7 @@ impl MaxNPlayer {
                             // debug!("Found parent_state: {}", parent_hash,);
                             if parent_state.auction_end() {
                                 // Averaging at chance node where new auction is randomly revealed
-                                debug!("AVERAGING");
+                                info!("AVERAGING");
                                 for player in 0..parent_score.len() {
                                     parent_score[player] = (parent_score[player]
                                         * average_count as f32
@@ -144,8 +144,11 @@ impl MaxNPlayer {
                                 *remaining_children -= 1;
                                 if *remaining_children < 1 {
                                     // Bool to handle removing score in code below
+                                    // TODO: Trying this
+                                    score = parent_score.clone();
                                     remove_from_scores = true
-                                        && parent_state.turn_no() != initial_state.turn_no() + 1;
+                                        && parent_state.turn_no() > initial_state.turn_no() + 2;
+                                    // && parent_state.turn_no() != initial_state.turn_no() + 1;
                                 } else {
                                     update_parent_further = false;
                                 }
@@ -205,12 +208,11 @@ impl MaxNPlayer {
                 // Deepening and adding child nodes to buffer
                 // TODO: Abstract this
                 let legal_moves = leaf_state.legal_moves(leaf_state.current_player());
-                let mut child_states_count: usize = 0;
+                let child_states_count: usize = legal_moves.len();
                 for action in legal_moves {
                     let child_state =
                         leaf_state.manual_next_state_bid(leaf_state.current_player(), action);
                     buffer.push(child_state);
-                    child_states_count += 1;
                 }
                 scores.insert(
                     leaf_state.get_path_encoding(),
@@ -247,6 +249,26 @@ impl MaxNPlayer {
                 );
             }
         }
+        let round_2 =
+            initial_state.manual_next_state_bid(initial_state.current_player(), best_action);
+        if !round_2.auction_end() {
+            for action in round_2.legal_moves(round_2.current_player()) {
+                let next_state = round_2.manual_next_state_bid(round_2.current_player(), action);
+                if let Some((_, score, _, _)) = scores.get(&next_state.get_path_encoding()) {
+                    info!(
+                        "FINAL (Round 2): Player : {}, Action: {action} Scores: {:?}",
+                        round_2.current_player(),
+                        score
+                    );
+                } else {
+                    info!(
+                        "FINAL: Scores not found for {}",
+                        next_state.get_path_encoding()
+                    );
+                }
+            }
+        }
+
         info!("MAXN algo ran for: {:?}", start.elapsed());
         info!("Ended with leaf_nodes count: {}", leaf_node_count);
         best_action

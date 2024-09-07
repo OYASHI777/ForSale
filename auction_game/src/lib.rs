@@ -7,6 +7,7 @@ pub mod engines {
     pub mod traits;
 }
 pub mod game_modes {
+    pub mod self_play;
     pub mod standard;
     pub mod traits;
 }
