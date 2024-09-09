@@ -169,10 +169,13 @@ impl GameState {
         &self.remaining_checks
     }
     pub fn get_remaining_properties(&self) -> &Vec<Property> {
-        &self.remaining_checks
+        &self.remaining_properties
     }
     pub fn get_coins(&self) -> &Vec<Coins> {
         &self.coins
+    }
+    pub fn get_auction_pool(&self) -> &Vec<u8> {
+        &self.auction_pool
     }
     pub fn auction_end(&self) -> bool {
         if self.auction_pool.len() == 0 {
@@ -572,6 +575,7 @@ impl GameState {
                         let mut cloned_state = self.clone();
                         let sampled_properties: Vec<u8> =
                             combination.into_iter().cloned().collect();
+                        // info!("Sampled next reveals are : {:?}", sampled_properties);
                         cloned_state
                             .remaining_properties
                             .retain(|prop| !sampled_properties.contains(prop));
@@ -722,7 +726,7 @@ impl GameState {
             false
         }
     }
-    pub fn sell_phase_end(&self) -> bool {
+    pub fn game_end(&self) -> bool {
         if self.auction_pool.len() == 0
             && self.remaining_properties.len() == 0
             && self.remaining_checks.len() == 0
@@ -778,6 +782,7 @@ impl fmt::Display for GameState {
         )?;
         writeln!(f, "\nCurrent encode: {}", self.get_state_encoding())?;
         writeln!(f, "\nPath encode: {}", self.get_path_encoding())?;
+        writeln!(f, "\nself.auction_end(): {}", self.auction_end())?;
         writeln!(f, "--------- {} Auction ---------", self.game_phase)?;
         writeln!(f, "------------------------------------")?;
         writeln!(f, "      {:?}      ", self.auction_pool)?;

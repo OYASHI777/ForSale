@@ -11,6 +11,7 @@ rand = { workspace = true }
 helper = { path = "../helper" }
 log = "0.4.22"
 itertools = "0.13.0"
+crossbeam = "0.8.4"
 
 [[bin]]
 name = "random_game"

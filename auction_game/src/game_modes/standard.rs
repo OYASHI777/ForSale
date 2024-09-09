@@ -72,7 +72,7 @@ impl Game for StandardGame {
         info!("===== Starting Sell Phase =====");
         info!("");
         game_state.reveal_auction();
-        while game_state.sell_phase_end() == false {
+        while game_state.game_end() == false {
             history.push(game_state.clone());
             info!("Before Sell {game_state}");
             let aggregate_sales = match game_state.auction_end() {

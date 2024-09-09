@@ -68,7 +68,15 @@ impl Game for SelfPlay {
             let current_player = game_state.current_player();
             let mut best_move: u8 = 0;
             if let Some(player_control) = controllers.get_mut(&current_player) {
-                best_move = player_control.maximax_round(&game_state, 1, false, 0);
+                let rounds_param: u8 = match game_state.round_no() {
+                    0 => 1,
+                    1 => 1,
+                    2 => 1,
+                    3 => 2,
+                    4 => 1,
+                    _ => 1,
+                };
+                best_move = player_control.maximax_round(&game_state, rounds_param, false, 0);
             }
             info!("Player: {} chose to do: {}", current_player + 1, best_move);
             game_state = game_state.generate_next_state_bid(current_player, best_move);

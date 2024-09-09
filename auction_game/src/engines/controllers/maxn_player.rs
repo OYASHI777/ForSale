@@ -7,6 +7,7 @@ use log::{debug, info, warn};
 use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
 use rand::thread_rng;
+use std::cmp;
 use std::time::Instant;
 
 pub struct MaxNPlayer {
@@ -59,6 +60,7 @@ impl MaxNPlayer {
         let mut leaf_node_count: u64 = 0;
         let initial_path_encoding = initial_state.get_path_encoding();
         // GameState encoding, Player Scores, number of child nodes remaining, average count
+        // TODO: assign enum to score
         let mut scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
             AHashMap::with_capacity(100000);
         let mut buffer: Vec<GameState> = Vec::with_capacity(100000);
@@ -88,7 +90,7 @@ impl MaxNPlayer {
                 {
                     // Terminal node, return score
                     leaf_node_count += 1;
-                    if leaf_node_count % 500000 == 0 {
+                    if leaf_node_count % 1000000 == 0 {
                         println!(
                             "Visited leaf_nodes: {}, buffer len: {}",
                             leaf_node_count,
@@ -125,14 +127,33 @@ impl MaxNPlayer {
                             // debug!("Found parent_state: {}", parent_hash,);
                             if parent_state.auction_end() {
                                 // Averaging at chance node where new auction is randomly revealed
-                                info!("AVERAGING");
+                                // info!(
+                                //     "Old avg score for parent {} : {:?}",
+                                //     parent_hash, parent_score
+                                // );
                                 for player in 0..parent_score.len() {
                                     parent_score[player] = (parent_score[player]
                                         * average_count as f32
                                         + score[player])
                                         / (average_count + 1) as f32;
                                 }
+                                // info!(
+                                //     "New avg score for parent {} : {:?}",
+                                //     parent_hash, parent_score
+                                // );
                                 average_count += 1;
+                                //     TODO: Make average node propagate upwards...
+                                *remaining_children -= 1;
+                                if *remaining_children < 1 {
+                                    // Bool to handle removing score in code below
+                                    // TODO: Trying this
+                                    score = parent_score.clone();
+                                    remove_from_scores = true
+                                        && parent_state.turn_no() > initial_state.turn_no() + 2;
+                                    // && parent_state.turn_no() != initial_state.turn_no() + 1;
+                                } else {
+                                    update_parent_further = false;
+                                }
                             } else {
                                 // Maximax at deterministic node
                                 if parent_score[parent_state.current_player() as usize]
@@ -261,18 +282,41 @@ impl MaxNPlayer {
         );
         // TODO: Expand beyond 6 players at some point
         let mut scores: Vec<f32> = vec![0.0; game_state.no_players() as usize];
+        // let bool_bid_phase_score_function: bool = game_state.game_phase() == GamePhase::Bid
+        //     || game_state.get_remaining_checks().len() > 24;
+        let coins = game_state.get_coins();
+        if game_state.game_end() {
+            let mut total_score: f32 = 0.0;
+            for i in 0..game_state.no_players() {
+                let player_checks = game_state.get_player_checks(i);
+                scores[i as usize] += player_checks.iter().map(|&prop| prop as f32).sum::<f32>()
+                    + coins[i as usize] as f32;
+                total_score += scores[i as usize]
+            }
+            for score in scores.iter_mut() {
+                *score /= total_score;
+            }
+            return scores;
+        }
         match game_state.game_phase() {
             GamePhase::Bid => {
                 // For each property multiply by point
                 // Calculate the remaining properties/ remaining coins
                 // for each coin multiply by the ratio
-                let coins = game_state.get_coins();
-                let remaining_property_per_coin: f32 = game_state
-                    .get_remaining_properties()
-                    .iter()
-                    .map(|&prop| prop as f32)
-                    .sum::<f32>()
-                    / coins.iter().map(|&prop| prop as f32).sum::<f32>();
+                let total_coins = coins.iter().map(|&prop| prop as f32).sum::<f32>();
+                let remaining_property_per_coin: f32 = if total_coins == 0.0 {
+                    0.0
+                } else {
+                    game_state
+                        .get_remaining_properties()
+                        .iter()
+                        .map(|&prop| prop as f32)
+                        .sum::<f32>()
+                        / total_coins
+                };
+                let value_per_coin: f32 =
+                    (VALUE_PER_PROPERTY * remaining_property_per_coin).max(1.0);
+                let mut total_score: f32 = 0.0;
                 for i in 0..game_state.no_players() {
                     let player_properties = game_state.get_player_properties(i);
                     scores[i as usize] += VALUE_PER_PROPERTY
@@ -280,13 +324,16 @@ impl MaxNPlayer {
                             .iter()
                             .map(|&prop| prop as f32)
                             .sum::<f32>()
-                        + VALUE_PER_PROPERTY
-                            * remaining_property_per_coin
-                            * coins[i as usize] as f32;
+                        + value_per_coin * coins[i as usize] as f32;
+                    total_score += scores[i as usize];
+                }
+                for score in scores.iter_mut() {
+                    *score /= total_score;
                 }
             }
             GamePhase::Sell => {
                 let properties: &AHashMap<Player, Vec<Property>> = game_state.get_properties();
+                // TODO: Handle case where game has ended...
                 let total_remaining_properties: f32 = properties
                     .values()
                     .flat_map(|props| props.iter())
@@ -299,6 +346,7 @@ impl MaxNPlayer {
                     .map(|&prop| prop as f32)
                     .sum::<f32>()
                     / total_remaining_properties;
+                let mut total_score: f32 = 0.0;
                 for i in 0..game_state.no_players() {
                     let player_checks = game_state.get_player_checks(i);
                     let player_properties = game_state.get_player_properties(i);
@@ -308,7 +356,12 @@ impl MaxNPlayer {
                                 * player_properties
                                     .iter()
                                     .map(|&prop| prop as f32)
-                                    .sum::<f32>();
+                                    .sum::<f32>()
+                            + coins[i as usize] as f32;
+                    total_score += scores[i as usize];
+                }
+                for score in scores.iter_mut() {
+                    *score /= total_score;
                 }
             }
         }

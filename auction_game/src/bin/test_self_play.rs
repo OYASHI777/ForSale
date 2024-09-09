@@ -9,9 +9,9 @@ use log::{info, LevelFilter};
 
 fn main() {
     // TODO: Test searching more than 1 node
-    let mut id: u32 = 20;
-    init_logger(LevelFilter::Info, "DB2 Release Test Self Play");
-    while id < 10000 {
+    let mut id: u32 = 0;
+    init_logger(LevelFilter::Info, "DB AVG Release Test Self Play");
+    while id < 1 {
         let mut self_play_game =
             SelfPlay::new(format!("Test_{id}").to_string(), LevelFilter::Info, true);
         self_play_game.game_run();
