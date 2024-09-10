@@ -4,6 +4,7 @@ use crate::models::enums::{GamePhase, Player, Property};
 use crate::models::game_state::GameState;
 use ahash::AHashMap;
 use log::{debug, info, warn};
+use num_traits::float::FloatCore;
 use rand::rngs::ThreadRng;
 use rand::seq::IndexedRandom;
 use rand::thread_rng;
@@ -178,7 +179,6 @@ impl MaxNPlayer {
                             debug_assert!(false, "Should never reach here. scores should always have a parent_hash for DFS");
                             update_parent_further = false;
                         }
-                        debug!("PROPAGATING: Old parent state: {}", parent_hash);
                         if parent_hash == initial_path_encoding {
                             // Stop propagating deletions
                             break;
@@ -191,10 +191,6 @@ impl MaxNPlayer {
                                 remove_from_scores = false;
                             } else {
                                 if let Some((state, _, _, _)) = scores.get(&parent_hash) {
-                                    debug!(
-                                        "Trying to get parent hash of the current node: {}",
-                                        parent_hash
-                                    );
                                     parent_hash = state.get_parent_encoding();
                                 } else {
                                     warn!(
@@ -298,6 +294,8 @@ impl MaxNPlayer {
             }
             return scores;
         }
+        let mut max_score: f32 = f32::MIN;
+        let mut total_score: f32 = 0.0;
         match game_state.game_phase() {
             GamePhase::Bid => {
                 // For each property multiply by point
@@ -316,7 +314,7 @@ impl MaxNPlayer {
                 };
                 let value_per_coin: f32 =
                     (VALUE_PER_PROPERTY * remaining_property_per_coin).max(1.0);
-                let mut total_score: f32 = 0.0;
+
                 for i in 0..game_state.no_players() {
                     let player_properties = game_state.get_player_properties(i);
                     scores[i as usize] += VALUE_PER_PROPERTY
@@ -326,9 +324,9 @@ impl MaxNPlayer {
                             .sum::<f32>()
                         + value_per_coin * coins[i as usize] as f32;
                     total_score += scores[i as usize];
-                }
-                for score in scores.iter_mut() {
-                    *score /= total_score;
+                    if scores[i as usize] > max_score {
+                        max_score = scores[i as usize];
+                    }
                 }
             }
             GamePhase::Sell => {
@@ -346,7 +344,6 @@ impl MaxNPlayer {
                     .map(|&prop| prop as f32)
                     .sum::<f32>()
                     / total_remaining_properties;
-                let mut total_score: f32 = 0.0;
                 for i in 0..game_state.no_players() {
                     let player_checks = game_state.get_player_checks(i);
                     let player_properties = game_state.get_player_properties(i);
@@ -359,10 +356,19 @@ impl MaxNPlayer {
                                     .sum::<f32>()
                             + coins[i as usize] as f32;
                     total_score += scores[i as usize];
+                    if scores[i as usize] > max_score {
+                        max_score = scores[i as usize];
+                    }
                 }
-                for score in scores.iter_mut() {
-                    *score /= total_score;
-                }
+            }
+        }
+        for score in scores.iter_mut() {
+            *score = (*score - max_score) / total_score;
+        }
+        let total_advantage: f32 = -scores.iter().sum::<f32>();
+        for score in scores.iter_mut() {
+            if (*score - 0.0).abs() < f32::epsilon() {
+                *score += total_advantage;
             }
         }
         debug_assert!(
