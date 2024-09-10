@@ -76,7 +76,7 @@ impl Game for SelfPlay {
                     4 => 1,
                     _ => 1,
                 };
-                best_move = player_control.maximax_round(&game_state, rounds_param, false, 0);
+                best_move = player_control.maximax_round(&game_state, rounds_param, false, 0, true);
             }
             info!("Player: {} chose to do: {}", current_player + 1, best_move);
             game_state = game_state.generate_next_state_bid(current_player, best_move);

@@ -41,7 +41,7 @@ fn test_self_play() {
         let current_player = game_state.current_player();
         let mut best_move: u8 = 0;
         if let Some(player_control) = controllers.get_mut(&current_player) {
-            best_move = player_control.maximax_round(&game_state, 1, false, 0);
+            best_move = player_control.maximax_round(&game_state, 1, false, 0, true);
         }
         info!("Player: {} chose to do: {}", current_player + 1, best_move);
         game_state = game_state.generate_next_state_bid(current_player, best_move);
@@ -73,7 +73,7 @@ fn replicate_issue() {
     game_state = game_state.generate_next_state_bid(4, 0);
     info!("Initial GameState: {}", game_state);
     let mut player = MaxNPlayer::new(0, "Bob".to_string());
-    let output = player.maximax_round(&game_state, 1, true, 1);
+    let output = player.maximax_round(&game_state, 1, true, 1, true);
     info!("Best move is: {}", output);
     info!("END");
 }
