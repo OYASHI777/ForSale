@@ -18,6 +18,8 @@ pub struct MaxNPlayer {
     buffer: Vec<GameState>,
     // GameState encoding, Player Scores, number of child nodes remaining, average count
     scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)>,
+    bool_print: bool,
+    bool_log: bool,
 }
 
 impl PlayerController for MaxNPlayer {
@@ -25,18 +27,13 @@ impl PlayerController for MaxNPlayer {
         self.nickname.clone()
     }
     fn decision(&mut self, game_state: &GameState) -> u8 {
-        let legal_moves: Vec<u8> = game_state.legal_moves(self.id);
-        debug_assert!(
-            legal_moves.len() > 0,
-            "Legal Moves Provided for player {} is empty",
-            self.id
-        );
-        *legal_moves.choose(&mut self.rng).unwrap()
+        let best_move = self.maximax_round(&game_state, 1, false, 0);
+        best_move
     }
 }
 
 impl MaxNPlayer {
-    pub fn new(id: u8, nickname: String) -> Self {
+    pub fn new(id: u8, nickname: String, bool_print: bool, bool_log: bool) -> Self {
         let rng = thread_rng();
         let buffer: Vec<GameState> = Vec::with_capacity(10000);
         let scores: AHashMap<String, (GameState, Vec<f32>, usize, usize)> =
@@ -47,6 +44,8 @@ impl MaxNPlayer {
             rng,
             buffer,
             scores,
+            bool_print,
+            bool_log,
         }
     }
     pub fn maximax_round(
@@ -55,7 +54,6 @@ impl MaxNPlayer {
         rounds: u8,
         random_sample: bool,
         n_samples: u32,
-        bool_log_scores: bool,
     ) -> u8 {
         // TODO: Test LRUCaching after concurrency
         let start = Instant::now();
@@ -84,7 +82,7 @@ impl MaxNPlayer {
                 {
                     // Terminal node, return score
                     leaf_node_count += 1;
-                    if leaf_node_count % 1000000 == 0 {
+                    if self.bool_print && leaf_node_count % 10000000 == 0 {
                         println!(
                             "Visited leaf_nodes: {}, buffer len: {}",
                             leaf_node_count,
@@ -112,7 +110,7 @@ impl MaxNPlayer {
                 self.deepen_search(leaf_state);
             }
         }
-        self.get_best_action(initial_state, start, &leaf_node_count, bool_log_scores)
+        self.get_best_action(initial_state, start, &leaf_node_count)
     }
 
     fn deepen_search(&mut self, mut leaf_state: GameState) {
@@ -138,7 +136,6 @@ impl MaxNPlayer {
         initial_state: &GameState,
         start: Instant,
         leaf_node_count: &u64,
-        bool_log_scores: bool,
     ) -> u8 {
         let mut best_action: u8 = 0;
         let mut best_score: f32 = f32::MIN;
@@ -146,7 +143,7 @@ impl MaxNPlayer {
             let next_state =
                 initial_state.manual_next_state_bid(initial_state.current_player(), action);
             if let Some((_, score, _, _)) = self.scores.get(&next_state.get_path_encoding()) {
-                if bool_log_scores {
+                if self.bool_log {
                     info!(
                         "FINAL: Player : {}, Action: {action} Scores: {:?}",
                         initial_state.current_player() + 1,
@@ -158,7 +155,7 @@ impl MaxNPlayer {
                     best_score = score[initial_state.current_player() as usize];
                 }
             } else {
-                if bool_log_scores {
+                if self.bool_log {
                     info!(
                         "FINAL: Scores not found for {}",
                         next_state.get_path_encoding()
@@ -274,7 +271,7 @@ impl MaxNPlayer {
         }
     }
 
-    fn round_score_function(game_state: &GameState) -> Vec<f32> {
+    pub fn round_score_function(game_state: &GameState) -> Vec<f32> {
         debug_assert!(
             game_state.auction_end() == true,
             "Cannot use round_score_function if round has not ended!"

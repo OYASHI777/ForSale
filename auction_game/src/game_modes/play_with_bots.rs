@@ -1,34 +1,34 @@
 use crate::engines::controllers::maxn_player::MaxNPlayer;
+use crate::engines::controllers::terminal_player::HumanPlayer;
 use crate::game_modes::traits::Game;
-use crate::models::enums::{Coins, Property};
 use crate::{engines, models};
 use ahash::AHashMap;
 use engines::traits::PlayerController;
 use helper::generation::string_to_seed;
-use helper::logger::init_logger;
-use log::{info, LevelFilter};
+use log::LevelFilter;
 use models::game_state::GameState;
 use rand::rngs::StdRng;
-use rand::Rng;
 use rand::SeedableRng;
+use rand::{thread_rng, Rng};
+use std::thread;
+use std::time::Duration;
 
-pub struct SelfPlay {
+pub struct Play {
     pub game_id: String,
     level_filter: LevelFilter,
     // controllers: Vec<Box<dyn PlayerController>>,
     bool_random_starting_player: bool,
-    //     TODO: At some point also indicate the GUI Logger/Interface
 }
 
 // TODO: Add controllers properly
-impl SelfPlay {
+impl Play {
     pub fn new(
         game_id: String,
         level_filter: LevelFilter,
         // controllers: Vec<Box<dyn PlayerController>>,
         bool_random_starting_player: bool,
     ) -> Self {
-        SelfPlay {
+        Play {
             game_id,
             level_filter,
             // controllers,
@@ -37,56 +37,65 @@ impl SelfPlay {
     }
 }
 
-impl Game for SelfPlay {
+impl Game for Play {
     fn game_run(&mut self) {
         // TODO: Deal with the logger not being able to be repeatedly initialized
         // init_logger(self.level_filter, &self.game_id);
-        info!("Running Game ID: {}", self.game_id);
-        let seed = string_to_seed(&self.game_id);
-        let mut rng = StdRng::seed_from_u64(seed);
-        let mut current_player: u8 = match self.bool_random_starting_player {
+
+        println!("Running Game ID: {}", self.game_id);
+        // let seed = string_to_seed(&self.game_id);
+        // let mut rng = StdRng::seed_from_u64(seed);
+        let mut rng = thread_rng();
+        let current_player: u8 = match self.bool_random_starting_player {
             false => 0,
-            true => rng.gen_range(0..6 as u8), // TODO: Use self.controllers.len()
+            true => rng.gen_range(0..6u8), // TODO: Use self.controllers.len()
         };
         let no_players: u8 = 6;
-        let mut controllers: AHashMap<u8, MaxNPlayer> =
+        let mut controllers: AHashMap<u8, Box<dyn PlayerController>> =
             AHashMap::with_capacity(no_players as usize);
-        for i in 0..no_players {
+        controllers.insert(0, Box::new(HumanPlayer::new(0, "Brave Human".to_string())));
+        for i in 1..no_players {
             controllers.insert(
                 i,
-                MaxNPlayer::new(i, format!("P{i}").to_string(), true, true),
+                Box::new(MaxNPlayer::new(i, format!("P{i}").to_string(), true, true)),
             );
         }
         let mut game_state = GameState::starting(no_players, current_player);
-        info!("GameState: {}", game_state);
+        println!("GameState: {}", game_state);
         game_state.reveal_auction();
         let mut last_round = game_state.round_no();
         while game_state.bid_phase_end() == false {
-            info!("{game_state}");
+            println!("{game_state}");
             if game_state.round_no() > last_round {
                 last_round = game_state.round_no();
                 game_state.reveal_auction();
                 continue;
             }
             let current_player = game_state.current_player();
+            println!("It's Bot {}'s turn", current_player + 1);
             let mut best_move: u8 = 0;
             if let Some(player_control) = controllers.get_mut(&current_player) {
-                let rounds_param: u8 = match game_state.round_no() {
-                    0 => 1,
-                    1 => 1,
-                    2 => 1,
-                    3 => 2,
-                    4 => 1,
-                    _ => 1,
-                };
-                best_move = player_control.maximax_round(&game_state, rounds_param, false, 0);
+                best_move = player_control.decision(&game_state);
             }
-            info!("Player: {} chose to do: {}", current_player + 1, best_move);
+            if game_state.turn_no() > 1 && game_state.current_player() != 0 {
+                thread::sleep(Duration::from_secs(5));
+            }
+            println!("Player: {} chose to do: {}", current_player + 1, best_move);
             game_state = game_state.generate_next_state_bid(current_player, best_move);
         }
-        info!("{game_state}");
+        println!("{game_state}");
+        let end_scores = MaxNPlayer::round_score_function(&game_state);
+        println!("Ending Score is: {:?}", end_scores);
+        let rank = find_ranking(&end_scores);
+        println!("Your rank was {}!", rank);
         // let output = player.maximax_round(&game_state, 1, true, 1);
         // info!("Best move is: {}", output);
-        info!("END");
+        println!("END");
     }
+}
+fn find_ranking(values: &Vec<f32>) -> usize {
+    let mut sorted_values = values.clone();
+    sorted_values.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
+
+    sorted_values.iter().position(|&x| x == values[0]).unwrap() + 1
 }

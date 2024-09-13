@@ -14,6 +14,7 @@ itertools = "0.13.0"
 crossbeam = "0.8.4"
 num-traits = "0.2.19"
 crossbeam-deque = "0.8.5"
+ratatui = "0.28.1"
 
 [[bin]]
 name = "random_game"
@@ -30,3 +31,7 @@ path = "src/bin/disposable_box.rs"
 [[bin]]
 name = "test_self_play"
 path = "src/bin/test_self_play.rs"
+
+[[bin]]
+name = "challenge_bots"
+path = "src/bin/challenge_bots.rs"
