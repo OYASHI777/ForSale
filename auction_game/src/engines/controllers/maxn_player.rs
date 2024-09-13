@@ -233,6 +233,7 @@ impl MaxNPlayer {
                         // Bool to handle removing score in code below
                         // TODO: Trying this
                         score = parent_score.clone();
+                        // THIS IS WHERE YOU DECIDE HOW MUCH SCORES TO SAVE
                         remove_from_scores =
                             true && parent_state.turn_no() > initial_state.turn_no() + 2;
                         // && parent_state.turn_no() != initial_state.turn_no() + 1;

@@ -1,85 +1,117 @@
-// use crate::game_modes::traits::Game;
-// use crate::models::game_state::GameState;
-// use crossbeam::deque::{Injector, Steal, Stealer, Worker};
-// use rand::prelude::ThreadRng;
-// use rand::thread_rng;
-// use std::sync::mpsc;
-//
-// pub struct MaxNMultiPlayer {
-//     id: u8,
-//     nickname: String,
-//     rng: ThreadRng,
-//     workers: Vec<Worker<GameState>>,
-//     stealers: Vec<Stealer<GameState>>, //
-//     injector: Injector<GameState>,     // Global queue where new tasks are pushed
-//     tx: mpsc::Sender<GameState>,
-//     rx: mpsc::Receiver<GameState>,
-// }
-//
-// impl MaxNMultiPlayer {
-//     pub fn new(id: u8, nickname: String, num_workers: usize, buffer_size: usize) -> Self {
-//         let mut workers: Vec<Worker<GameState>> = Vec::with_capacity(num_workers);
-//         let mut stealers: Vec<Stealer<GameState>> = Vec::with_capacity(num_workers);
-//
-//         let injector = Injector::new();
-//
-//         let (tx, rx) = mpsc::channel::<GameState>();
-//
-//         for _ in 0..num_workers {
-//             let worker: Worker<GameState> = Worker::new_fifo();
-//             stealers.push(worker.stealer());
-//             workers.push(worker);
-//         }
-//
-//         MaxNMultiPlayer {
-//             id,
-//             nickname,
-//             rng: thread_rng(),
-//             workers,
-//             stealers,
-//             injector,
-//             tx,
-//             rx,
-//         }
-//     }
-//
-//     pub fn initialise(&self) {
-//         //     Start mpsc channel
-//         //     Create threads for workers
-//     }
-//
-//     fn worker_loop<T>(
-//         worker: Worker<T>,
-//         injector: Injector<T>,
-//         stealers: Vec<Stealer<T>>,
-//         tx: mpsc::Sender<T>,
-//     ) where
-//         T: Send + 'static,
-//     {
-//         loop {
-//             if let Some(task) = find_task(&worker, &injector, &stealers) {
-//                 // Execute the task
-//                 println!("Executing task in worker: {:?}", thread::current().id());
-//                 // ...
-//
-//                 // Send the end product through the MPSC channel
-//                 tx.send(end_product).unwrap();
-//             } else {
-//                 // No tasks found, yield or sleep
-//                 thread::yield_now();
-//             }
-//         }
-//     }
-//     fn find_task<T>(
-//         worker: &Worker<T>,
-//         injector: &Injector<T>,
-//         stealers: &[Stealer<T>],
-//     ) -> Option<T> {
-//         worker.pop().or_else(|| {
-//             injector
-//                 .steal_batch_and_pop(worker)
-//                 .or_else(|| stealers.iter().map(|s| s.steal()).collect())
-//                 .and_then(|s| s.success())
-//         })
-//     }
-// }
+use crossbeam_deque::{Injector, Stealer, Worker};
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::{Relaxed, SeqCst};
+use std::sync::{mpsc, Arc};
+use std::thread;
+
+enum Task<T, P> {
+    Traverse(T),
+    Propagate(P),
+}
+struct WorkStealingMaxN<T> {
+    traverser_vec: Vec<Worker<T>>,
+    propagator_vec: Vec<Worker<T>>,
+    stealers: Vec<Stealer<T>>,
+    abort_flag: Arc<AtomicBool>,
+}
+
+impl<T: Send + 'static> WorkStealingMaxN<T> {
+    pub fn new(num_threads: usize) -> Self {
+        let mut traverser_vec = Vec::with_capacity(num_threads);
+        let mut propagator_vec = Vec::with_capacity(num_threads);
+        let mut stealers = Vec::with_capacity(num_threads);
+
+        for _ in 0..num_threads {
+            let traverser = Worker::new_fifo();
+            let stealer = traverser.stealer();
+            let propagator = Worker::new_fifo();
+            traverser_vec.push(traverser);
+            propagator_vec.push(propagator);
+            stealers.push(stealer);
+        }
+
+        WorkStealingMaxN {
+            traverser_vec,
+            propagator_vec,
+            stealers,
+            abort_flag: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    pub fn spawn_workers<F, T, P>(&self, work_fn: F)
+    where
+        F: Fn(&Worker<T>, &Worker<P>, &[Stealer<T>], Arc<AtomicBool>) + Send + Clone + 'static,
+    {
+        let stealers = Arc::new(self.stealers.clone());
+
+        let num_threads = self.traverser_vec.len();
+
+        for i in 0..num_threads {
+            let work_fn = work_fn.clone();
+            let stealers = Arc::clone(&stealers);
+            let traverser = self.traverser_vec[i].clone();
+            let propagator = self.propagator_vec[i].clone();
+
+            thread::spawn(move || {
+                work_fn(traverser, propagator, &stealers, self.abort_flag.clone());
+            });
+        }
+    }
+
+    pub fn end_slavery(&mut self) {
+        for propagator in self.propagator_vec {
+            while propagator.pop().is_some() {}
+        }
+        for traverser in self.traverser_vec {
+            while traverser.pop().is_some() {}
+        }
+        //     TODO: Clear mpsc side of things
+    }
+}
+
+fn find_task<T, P>(
+    traverser: &Worker<T>,
+    propagator: &Worker<P>,
+    stealers: &[Stealer<T>],
+) -> Option<Task<T, P>> {
+    match propagator.pop() {
+        Some(task) => Some(Task::Propagate(task)),
+        None => {}
+    }
+    match traverser.pop() {
+        Some(task) => Some(Task::Traverse(task)),
+        None => {}
+    }
+    match stealers.iter().find_map(|s| s.steal().success()) {
+        Some(task) => Some(Task::Traverse(task)),
+        None => None,
+    }
+}
+
+fn worker_fn<T>(
+    traverser: &Worker<T>,
+    propagator: &Worker<T>,
+    stealers: &[Stealer<T>],
+    abort_flag: Arc<AtomicBool>,
+) {
+    while abort_flag.load(Relaxed) {
+        match find_task(traverser, propagator, stealers) {
+            Some(Task::Propagate(task)) => {
+                todo!();
+            }
+            Some(Task::Traverse(task)) => {
+                todo!();
+            }
+            None => {}
+        }
+    }
+}
+
+fn mpsc_thread(rx: mpsc::Receiver<Task1Result>, injector: Injector<Work2>) {
+    for result in rx {
+        let new_tasks = compute_new_tasks(result);
+        for task in new_tasks {
+            injector.push(task);
+        }
+    }
+}
