@@ -1,130 +1,314 @@
+use crate::game_modes::traits::Game;
+use crate::models::enums::GamePhase;
+use crate::models::game_state::GameState;
 use crossbeam::scope;
 use crossbeam_deque::{Injector, Stealer, Worker};
+use dashmap::DashMap;
+use log::warn;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use std::process::abort;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::{Relaxed, SeqCst};
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::{Receiver, SendError, Sender};
 use std::sync::{mpsc, Arc};
 use std::thread;
 
 // TODO: Make a score updater trait for the P
-enum Task<T, P> {
-    Traverse(T),
-    Propagate(P),
+struct ScoreMaxN {
+    pub game_state: GameState,
+    pub score: Vec<f32>,
+    pub remaining_children: u8,
+    pub average_count: usize,
+}
+
+impl ScoreMaxN {
+    pub fn default(game_state: GameState, remaining_children: u8, average_count: usize) -> Self {
+        let no_players = game_state.no_players() as usize;
+        ScoreMaxN {
+            game_state,
+            score: vec![f32::MIN; no_players],
+            remaining_children,
+            average_count,
+        }
+    }
+}
+
+#[derive(Clone)]
+struct GameStateJob {
+    pub game_state: GameState,
+    pub root_round_no: u8,
+    pub root_turn_no: u8,
+    pub terminal_condition: TerminalCondition,
+}
+
+impl GameStateJob {
+    pub fn new(
+        game_state: GameState,
+        root_round_no: u8,
+        root_turn_no: u8,
+        terminal_condition: TerminalCondition,
+    ) -> Self {
+        GameStateJob {
+            game_state,
+            root_round_no,
+            root_turn_no,
+            terminal_condition,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+enum TerminalCondition {
+    // Contains number of rounds after root round to terminate
+    RoundEnd(u8),
+}
+
+enum Task {
+    Traverse(GameStateJob),
+    Propagate(ScoreMaxN),
 }
 enum CompletedJob<L, M> {
     Traverse(L),
     Propagate(M),
 }
 
-struct WorkStealingMaxN<L, M> {
+struct WorkStealingMaxN {
     num_threads: usize,
+    scores: Arc<DashMap<String, ScoreMaxN>>,
+    pause_flag: Arc<AtomicBool>,
     abort_flag: Arc<AtomicBool>,
-    tx: Sender<CompletedJob<L, M>>,
-    rx: Receiver<CompletedJob<L, M>>,
+    tx: Sender<ScoreMaxN>,
+    rx: Receiver<ScoreMaxN>,
 }
 
-impl<L: Send + 'static, M: Send + 'static> WorkStealingMaxN<L, M> {
+impl WorkStealingMaxN {
     pub fn new(num_threads: usize) -> Self {
         let (tx, rx) = mpsc::channel();
+        let scores = Arc::new(DashMap::with_capacity(50000));
         WorkStealingMaxN {
             num_threads,
+            scores,
+            pause_flag: Arc::new(AtomicBool::new(false)),
             abort_flag: Arc::new(AtomicBool::new(false)),
             tx,
             rx,
         }
     }
 
-    pub fn spawn_workers<F, T, P>(&mut self, work_fn: F)
+    pub fn spawn_workers<F>(&mut self, work_fn: F)
     where
-        F: Fn(Worker<T>, Worker<P>, &[Stealer<T>], Arc<AtomicBool>, Sender<CompletedJob<L, M>>)
-            + Send
+        F: Fn(
+                Worker<GameStateJob>,
+                Worker<ScoreMaxN>,
+                &[Stealer<GameStateJob>],
+                &[Stealer<ScoreMaxN>],
+                Arc<DashMap<String, ScoreMaxN>>,
+                Arc<AtomicBool>,
+                Arc<AtomicBool>,
+                Sender<GameStateJob>,
+            ) + Send
             + Sync
             + Clone
             + 'static,
-        T: Send + 'static,
-        P: Send + 'static,
     {
-        let mut traverser_vec = Vec::with_capacity(self.num_threads);
-        let mut propagator_vec = Vec::with_capacity(self.num_threads);
-        let mut stealers = Vec::with_capacity(self.num_threads);
+        let (tx, rx) = mpsc::channel::<GameStateJob>();
+
+        let mut traverser_vec: Vec<Worker<GameStateJob>> = Vec::with_capacity(self.num_threads);
+        let mut propagator_vec: Vec<Worker<ScoreMaxN>> = Vec::with_capacity(self.num_threads);
+        let mut traverser_stealers_vec: Vec<Vec<Stealer<GameStateJob>>> =
+            Vec::with_capacity(self.num_threads);
+        let mut propagator_stealers_vec: Vec<Vec<Stealer<ScoreMaxN>>> =
+            Vec::with_capacity(self.num_threads);
+        // Creating Workers
         for _ in 0..self.num_threads {
-            let traverser = Worker::new_lifo();
-            let propagator = Worker::new_lifo();
+            let traverser: Worker<GameStateJob> = Worker::new_lifo();
+            let propagator: Worker<ScoreMaxN> = Worker::new_lifo();
             traverser_vec.push(traverser);
             propagator_vec.push(propagator);
         }
 
+        // Creating Stealers
         for i in 0..self.num_threads {
-            let mut thread_stealers = Vec::with_capacity(self.num_threads - 1);
+            let mut temp_traverser_stealers = Vec::with_capacity(self.num_threads - 1);
+            let mut temp_propagator_stealers = Vec::with_capacity(self.num_threads - 1);
             for j in 0..self.num_threads {
                 if i != j {
-                    let stealer = traverser_vec[j].stealer();
-                    thread_stealers.push(stealer);
+                    let traverser_stealer = traverser_vec[j].stealer();
+                    let propagator_stealer = propagator_vec[j].stealer();
+                    temp_traverser_stealers.push(traverser_stealer);
+                    temp_propagator_stealers.push(propagator_stealer);
                 }
             }
-            thread_stealers.shuffle(&mut thread_rng());
-            stealers.push(thread_stealers);
+            temp_traverser_stealers.shuffle(&mut thread_rng());
+            temp_propagator_stealers.shuffle(&mut thread_rng());
+            traverser_stealers_vec.push(temp_traverser_stealers);
+            propagator_stealers_vec.push(temp_propagator_stealers);
         }
-
-        let abort_flag = Arc::clone(&self.abort_flag);
 
         scope(|s| {
             for _ in 0..traverser_vec.len() {
                 let work_fn = work_fn.clone();
                 let traverser = traverser_vec.pop().unwrap();
                 let propagator = propagator_vec.pop().unwrap();
-                let stealers = stealers.pop().unwrap();
-                let abort_flag = Arc::clone(&abort_flag);
-                let tx = self.tx.clone();
+                let traverser_stealers = traverser_stealers_vec.pop().unwrap();
+                let propagator_stealers = propagator_stealers_vec.pop().unwrap();
+                let scores = Arc::clone(&self.scores);
+                let pause_flag = Arc::clone(&self.pause_flag);
+                let abort_flag = Arc::clone(&self.abort_flag);
+                let tx_move = tx.clone();
 
                 s.spawn(move |_| {
-                    work_fn(traverser, propagator, &stealers, abort_flag, tx);
+                    work_fn(
+                        traverser,
+                        propagator,
+                        &traverser_stealers,
+                        &propagator_stealers,
+                        scores,
+                        pause_flag,
+                        abort_flag,
+                        tx_move,
+                    );
                 });
             }
         })
         .unwrap();
+        //     TODO: Handle mpsc rx
+        let abort_flag = Arc::clone(&self.abort_flag);
+        thread::spawn(move || handle_received_scores(rx, abort_flag));
     }
+    //     TODO: Function to get evaluation going
+    //     TODO: Function to end evaluation early
 }
 
-fn find_task<T, P>(
-    traverser: &Worker<T>,
-    propagator: &Worker<P>,
-    stealers: &[Stealer<T>],
-) -> Option<Task<T, P>> {
+fn find_task(
+    traverser: &Worker<GameStateJob>,
+    propagator: &Worker<ScoreMaxN>,
+    traverser_stealers: &[Stealer<GameStateJob>],
+    propagator_stealers: &[Stealer<ScoreMaxN>],
+) -> Option<Task> {
     if let Some(task) = propagator.pop() {
         return Some(Task::Propagate(task));
     }
     if let Some(task) = traverser.pop() {
         return Some(Task::Traverse(task));
     }
-    match stealers.iter().find_map(|s| s.steal().success()) {
-        Some(task) => Some(Task::Traverse(task)),
+    if let Some(task) = traverser_stealers.iter().find_map(|s| s.steal().success()) {
+        return Some(Task::Traverse(task));
+    }
+    match propagator_stealers.iter().find_map(|s| s.steal().success()) {
+        Some(task) => Some(Task::Propagate(task)),
         None => None,
     }
 }
 
-fn worker_fn<T, P>(
-    traverser: Worker<T>,
-    propagator: Worker<P>,
-    stealers: &[Stealer<T>],
+fn worker_fn(
+    traverser: Worker<GameStateJob>,
+    propagator: Worker<ScoreMaxN>,
+    traverser_stealers: &[Stealer<GameStateJob>],
+    propagator_stealers: &[Stealer<ScoreMaxN>],
+    scores: Arc<DashMap<String, ScoreMaxN>>,
+    pause_flag: Arc<AtomicBool>,
     abort_flag: Arc<AtomicBool>,
+    tx: Sender<GameStateJob>,
 ) {
-    while abort_flag.load(Relaxed) {
-        match find_task(&traverser, &propagator, stealers) {
-            Some(Task::Propagate(task)) => {
-                todo!();
+    while !abort_flag.load(Relaxed) {
+        while !pause_flag.load(Relaxed) {
+            // TODO: Figure a proper way to pause and save computation cost
+            match find_task(
+                &traverser,
+                &propagator,
+                traverser_stealers,
+                propagator_stealers,
+            ) {
+                Some(Task::Propagate(task)) => {
+                    todo!();
+                }
+                Some(Task::Traverse(job)) => {
+                    match job.terminal_condition {
+                        TerminalCondition::RoundEnd(search_depth) => {
+                            if job.game_state.auction_end() {
+                                if job.game_state.round_no() == job.root_round_no + search_depth
+                                    || job.game_state.game_phase() == GamePhase::Sell
+                                {
+                                    //     TODO: update_score ~> send to mpsc
+                                    loop {
+                                        match tx.send(job.clone()) {
+                                            Ok(_) => {
+                                                break;
+                                            }
+                                            Err(_) => {
+                                                warn!(
+                                                    "Failed to send job to mpsc {:?}",
+                                                    job.game_state.get_path_encoding()
+                                                );
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    //     TODO: Crossing rounds average
+                                    todo!();
+                                }
+                            } else {
+                                deepen(&traverser, &scores, job);
+                            }
+                        }
+                        _ => {
+                            unimplemented!();
+                        }
+                    }
+                }
+                None => {}
             }
-            Some(Task::Traverse(task)) => {
-                todo!();
+        }
+        end_slavery(&traverser, &propagator)
+    }
+}
+
+fn deepen(
+    traverser: &Worker<GameStateJob>,
+    scores: &Arc<DashMap<String, ScoreMaxN>>,
+    game_state_job: GameStateJob,
+) {
+    let legal_moves: Vec<u8> = game_state_job
+        .game_state
+        .legal_moves(game_state_job.game_state.current_player());
+    let child_states_count: usize = legal_moves.len();
+    for action in legal_moves {
+        let child_state = game_state_job
+            .game_state
+            .manual_next_state_bid(game_state_job.game_state.current_player(), action);
+        let next_game_state_job = GameStateJob::new(
+            child_state,
+            game_state_job.root_round_no,
+            game_state_job.root_turn_no,
+            game_state_job.terminal_condition,
+        );
+        traverser.push(next_game_state_job);
+    }
+    let score = ScoreMaxN::default(
+        game_state_job.game_state.clone(),
+        child_states_count as u8,
+        0,
+    );
+    scores.insert(game_state_job.game_state.get_path_encoding(), score);
+}
+
+fn handle_received_scores(rx: Receiver<GameStateJob>, abort_flag: Arc<AtomicBool>) {
+    while !abort_flag.load(Relaxed) {
+        match rx.recv() {
+            Ok(gamestate) => {
+                todo!("Evaluate Scores");
             }
-            None => {}
+            Err(_) => {
+                // Channel has been closed, exit the loop
+                break;
+            }
         }
     }
-    end_slavery(&traverser, &propagator)
 }
-pub fn end_slavery<T, P>(traverser: &Worker<T>, propagator: &Worker<P>) {
+
+pub fn end_slavery(traverser: &Worker<GameStateJob>, propagator: &Worker<ScoreMaxN>) {
     while propagator.pop().is_some() {}
     while traverser.pop().is_some() {}
 }
