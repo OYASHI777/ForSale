@@ -18,15 +18,19 @@ use std::thread;
 struct ScoreMaxN {
     pub game_state: GameState,
     pub score: Vec<f32>,
-    pub remaining_children: u8,
+    pub remaining_children: usize,
     pub average_count: usize,
 }
 
 impl ScoreMaxN {
-    pub fn default(game_state: GameState, remaining_children: u8, average_count: usize) -> Self {
+    pub fn default(
+        game_state: &GameState,
+        remaining_children: usize,
+        average_count: usize,
+    ) -> Self {
         let no_players = game_state.no_players() as usize;
         ScoreMaxN {
-            game_state,
+            game_state: game_state.clone(),
             score: vec![f32::MIN; no_players],
             remaining_children,
             average_count,
@@ -225,38 +229,7 @@ fn worker_fn(
                     todo!();
                 }
                 Some(Task::Traverse(job)) => {
-                    match job.terminal_condition {
-                        TerminalCondition::RoundEnd(search_depth) => {
-                            if job.game_state.auction_end() {
-                                if job.game_state.round_no() == job.root_round_no + search_depth
-                                    || job.game_state.game_phase() == GamePhase::Sell
-                                {
-                                    //     TODO: update_score ~> send to mpsc
-                                    loop {
-                                        match tx.send(job.clone()) {
-                                            Ok(_) => {
-                                                break;
-                                            }
-                                            Err(_) => {
-                                                warn!(
-                                                    "Failed to send job to mpsc {:?}",
-                                                    job.game_state.get_path_encoding()
-                                                );
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    //     TODO: Crossing rounds average
-                                    todo!();
-                                }
-                            } else {
-                                deepen_standard(&traverser, &scores, job);
-                            }
-                        }
-                        _ => {
-                            unimplemented!();
-                        }
-                    }
+                    traverse(&traverser, &scores, &tx, &job);
                 }
                 None => {}
             }
@@ -265,10 +238,68 @@ fn worker_fn(
     }
 }
 
+fn traverse(
+    traverser: &Worker<GameStateJob>,
+    scores: &Arc<DashMap<String, ScoreMaxN>>,
+    tx: &Sender<GameStateJob>,
+    job: &GameStateJob,
+) {
+    match job.terminal_condition {
+        TerminalCondition::RoundEnd(search_depth) => {
+            if job.game_state.auction_end() {
+                if job.game_state.round_no() == job.root_round_no + search_depth
+                    || job.game_state.game_phase() == GamePhase::Sell
+                {
+                    // send terminal state to mpsc
+                    get_score(&tx, &job);
+                } else {
+                    // TODO: ++ Custom depth by round
+                    // End of round but not terminal
+                    deepen_auction_end(&scores, &job);
+                }
+            } else {
+                deepen_standard(&traverser, &scores, &job);
+            }
+        }
+        _ => {
+            unimplemented!();
+        }
+    }
+}
+
+fn get_score(tx: &Sender<GameStateJob>, job: &GameStateJob) {
+    loop {
+        match tx.send(job.clone()) {
+            Ok(_) => {
+                todo!("Score the thing and send it away!");
+                break;
+            }
+            Err(_) => {
+                warn!(
+                    "Failed to send job to mpsc {:?}",
+                    job.game_state.get_path_encoding()
+                );
+            }
+        }
+    }
+}
+
+fn deepen_auction_end(scores: &Arc<DashMap<String, ScoreMaxN>>, job: &GameStateJob) {
+    let random_sample = true;
+    let n_samples = 1;
+    let chances_leaves = job
+        .game_state
+        .reveal_auction_perms(random_sample, n_samples);
+    for game_state in chances_leaves {
+        let score = ScoreMaxN::default(&game_state, n_samples as usize, 0);
+        scores.insert(game_state.get_path_encoding(), score);
+    }
+}
+
 fn deepen_standard(
     traverser: &Worker<GameStateJob>,
     scores: &Arc<DashMap<String, ScoreMaxN>>,
-    game_state_job: GameStateJob,
+    game_state_job: &GameStateJob,
 ) {
     let legal_moves: Vec<u8> = game_state_job
         .game_state
@@ -286,11 +317,7 @@ fn deepen_standard(
         );
         traverser.push(next_game_state_job);
     }
-    let score = ScoreMaxN::default(
-        game_state_job.game_state.clone(),
-        child_states_count as u8,
-        0,
-    );
+    let score = ScoreMaxN::default(&game_state_job.game_state, child_states_count, 0);
     scores.insert(game_state_job.game_state.get_path_encoding(), score);
 }
 fn deepen_average(
