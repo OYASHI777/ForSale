@@ -4,72 +4,83 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::{Relaxed, SeqCst};
+use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc};
 use std::thread;
 
+// TODO: Make a score updater trait for the P
 enum Task<T, P> {
     Traverse(T),
     Propagate(P),
 }
-
-struct WorkStealingMaxN<T, P> {
-    num_threads: usize,
-    traverser_vec: Vec<Worker<T>>,
-    propagator_vec: Vec<Worker<P>>,
-    stealers: Vec<Vec<Stealer<T>>>,
-    abort_flag: Arc<AtomicBool>,
+enum CompletedJob<L, M> {
+    Traverse(L),
+    Propagate(M),
 }
 
-impl<T: Send + 'static, P: Send + 'static> WorkStealingMaxN<T, P> {
-    pub fn new(num_threads: usize) -> Self {
-        let mut traverser_vec = Vec::with_capacity(num_threads);
-        let mut propagator_vec = Vec::with_capacity(num_threads);
-        let mut stealers = Vec::with_capacity(num_threads);
+struct WorkStealingMaxN<L, M> {
+    num_threads: usize,
+    abort_flag: Arc<AtomicBool>,
+    tx: Sender<CompletedJob<L, M>>,
+    rx: Receiver<CompletedJob<L, M>>,
+}
 
+impl<L: Send + 'static, M: Send + 'static> WorkStealingMaxN<L, M> {
+    pub fn new(num_threads: usize) -> Self {
+        let (tx, rx) = mpsc::channel();
         WorkStealingMaxN {
             num_threads,
-            traverser_vec,
-            propagator_vec,
-            stealers,
             abort_flag: Arc::new(AtomicBool::new(false)),
+            tx,
+            rx,
         }
     }
 
-    pub fn spawn_workers<F>(&mut self, work_fn: F)
+    pub fn spawn_workers<F, T, P>(&mut self, work_fn: F)
     where
-        F: Fn(Worker<T>, Worker<P>, &[Stealer<T>], Arc<AtomicBool>) + Send + Sync + Clone + 'static,
+        F: Fn(Worker<T>, Worker<P>, &[Stealer<T>], Arc<AtomicBool>, Sender<CompletedJob<L, M>>)
+            + Send
+            + Sync
+            + Clone
+            + 'static,
+        T: Send + 'static,
+        P: Send + 'static,
     {
+        let mut traverser_vec = Vec::with_capacity(self.num_threads);
+        let mut propagator_vec = Vec::with_capacity(self.num_threads);
+        let mut stealers = Vec::with_capacity(self.num_threads);
         for _ in 0..self.num_threads {
             let traverser = Worker::new_lifo();
             let propagator = Worker::new_lifo();
-            self.traverser_vec.push(traverser);
-            self.propagator_vec.push(propagator);
+            traverser_vec.push(traverser);
+            propagator_vec.push(propagator);
         }
 
         for i in 0..self.num_threads {
             let mut thread_stealers = Vec::with_capacity(self.num_threads - 1);
             for j in 0..self.num_threads {
                 if i != j {
-                    let stealer = self.traverser_vec[j].stealer();
+                    let stealer = traverser_vec[j].stealer();
                     thread_stealers.push(stealer);
                 }
             }
             thread_stealers.shuffle(&mut thread_rng());
-            self.stealers.push(thread_stealers);
+            stealers.push(thread_stealers);
         }
 
         let abort_flag = Arc::clone(&self.abort_flag);
 
         scope(|s| {
-            for _ in 0..self.traverser_vec.len() {
+            for _ in 0..traverser_vec.len() {
                 let work_fn = work_fn.clone();
-                let traverser = self.traverser_vec.pop().unwrap();
-                let propagator = self.propagator_vec.pop().unwrap();
-                let stealers = self.stealers.pop().unwrap();
+                let traverser = traverser_vec.pop().unwrap();
+                let propagator = propagator_vec.pop().unwrap();
+                let stealers = stealers.pop().unwrap();
                 let abort_flag = Arc::clone(&abort_flag);
+                let tx = self.tx.clone();
 
                 s.spawn(move |_| {
-                    work_fn(traverser, propagator, &stealers, abort_flag);
+                    work_fn(traverser, propagator, &stealers, abort_flag, tx);
                 });
             }
         })
