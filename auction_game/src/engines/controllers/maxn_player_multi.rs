@@ -173,7 +173,7 @@ impl WorkStealingMaxN {
             }
         })
         .unwrap();
-        //     TODO: Handle mpsc rx
+        //     TODO: Add Injectors for rx to send Score workload out
         let abort_flag = Arc::clone(&self.abort_flag);
         thread::spawn(move || handle_received_scores(rx, abort_flag));
     }
@@ -250,7 +250,7 @@ fn worker_fn(
                                     todo!();
                                 }
                             } else {
-                                deepen(&traverser, &scores, job);
+                                deepen_standard(&traverser, &scores, job);
                             }
                         }
                         _ => {
@@ -265,7 +265,7 @@ fn worker_fn(
     }
 }
 
-fn deepen(
+fn deepen_standard(
     traverser: &Worker<GameStateJob>,
     scores: &Arc<DashMap<String, ScoreMaxN>>,
     game_state_job: GameStateJob,
@@ -293,6 +293,13 @@ fn deepen(
     );
     scores.insert(game_state_job.game_state.get_path_encoding(), score);
 }
+fn deepen_average(
+    traverser: &Worker<GameStateJob>,
+    scores: &Arc<DashMap<String, ScoreMaxN>>,
+    game_state_job: GameStateJob,
+) {
+    todo!("Average of Permutations!");
+}
 
 fn handle_received_scores(rx: Receiver<GameStateJob>, abort_flag: Arc<AtomicBool>) {
     while !abort_flag.load(Relaxed) {
@@ -312,11 +319,3 @@ pub fn end_slavery(traverser: &Worker<GameStateJob>, propagator: &Worker<ScoreMa
     while propagator.pop().is_some() {}
     while traverser.pop().is_some() {}
 }
-// fn mpsc_thread(rx: mpsc::Receiver<Task1Result>, injector: Injector<Work2>) {
-//     for result in rx {
-//         let new_tasks = compute_new_tasks(result);
-//         for task in new_tasks {
-//             injector.push(task);
-//         }
-//     }
-// }
