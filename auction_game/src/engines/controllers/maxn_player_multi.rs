@@ -183,6 +183,7 @@ impl WorkStealingMaxN {
     }
     //     TODO: Function to get evaluation going
     //     TODO: Function to end evaluation early
+    //     TODO: Figure out how to tell when the evaluation is complete
 }
 
 fn find_task(
@@ -271,7 +272,7 @@ fn get_score(tx: &Sender<GameStateJob>, job: &GameStateJob) {
     loop {
         match tx.send(job.clone()) {
             Ok(_) => {
-                todo!("Score the thing and send it away!");
+                todo!("Score the thing and send it away! (Probably with an Injector)");
                 break;
             }
             Err(_) => {
