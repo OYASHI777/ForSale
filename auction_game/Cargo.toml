@@ -16,6 +16,7 @@ num-traits = "0.2.19"
 crossbeam-deque = "0.8.5"
 ratatui = "0.28.1"
 dashmap = "6.1.0"
+bimap = "0.6.3"
 
 [[bin]]
 name = "random_game"
