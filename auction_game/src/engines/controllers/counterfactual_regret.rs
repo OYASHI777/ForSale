@@ -77,3 +77,4 @@ impl CFR {
 // TODO: Calculate Exploitability
 // TODO: Plot live exploitability in ratatui
 // TODO: Stop iteration when exploitability sufficiently small
+// https://arxiv.org/pdf/1407.5042
