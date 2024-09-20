@@ -6,7 +6,7 @@ use crate::models::enums::{GamePhase, Player};
 use crate::models::game_state::GameState;
 use ahash::AHashMap;
 use bimap::BiMap;
-use log::debug;
+use log::{debug, info};
 use rand::{thread_rng, Rng};
 
 pub struct CFR {
@@ -134,10 +134,6 @@ impl CFR {
                         }
                     }
                     // Evaluate and update q_value based on action
-                    debug!(
-                        "update_player: {} move_index: {} aggregate_sales: {:?}",
-                        update_player, move_index, &aggregate_sales
-                    );
                     // TODO: The random choice is not working
                     let game_state =
                         initial_state.generate_next_state_sell(aggregate_sales.clone());
@@ -147,25 +143,16 @@ impl CFR {
                 }
                 //     Regret matching
                 //     Get average utility
-                debug!(
-                    "update_player: {} temp_scores before regret: {:?}",
-                    update_player, &temp_scores
-                );
                 let average_score =
                     mixed_strategy_score(&strategy_vec[update_player], &temp_scores);
-                debug!(
-                    "update_player: {}, average_score: {}",
-                    update_player, average_score
-                );
                 temp_scores
                     .iter_mut()
                     .for_each(|s| *s = (*s - average_score).max(0.0));
-                debug!(
-                    "update_player: {} temp_scores: {:?}",
-                    update_player, &temp_scores
-                );
                 for (q, t) in q_value[update_player].iter_mut().zip(temp_scores.iter()) {
-                    *q += t;
+                    // CFR
+                    // *q += t;
+                    // CFR+
+                    *q = (*q + t).max(0.0);
                 }
                 if self.alternating_update {
                     normalize(&mut strategy_vec[update_player], &q_value[update_player]);
@@ -177,16 +164,32 @@ impl CFR {
                     normalize(&mut strategy_vec[update_player], &q_value[update_player]);
                 }
             }
-            if i % 1000 == 0 {
-                println!("STRATEGY: ITER: {}", i);
-                for player in 0..initial_state.no_players() as usize {
-                    println!("P{}: {:?}", player, strategy_vec[player]);
-                }
+            if i % 10000 == 0 {
+                // println!("STRATEGY: ITER: {}", i);
+                // for player in 0..initial_state.no_players() as usize {
+                //     println!("P{}: {:?}", player, strategy_vec[player]);
+                // }
                 // println!("Q VALUE: ITER: {}", i);
                 // for player in 0..initial_state.no_players() as usize {
                 //     println!("P{}: {:?}", player, q_value[player]);
                 // }
+                // let mut total_exploitability: f32 = 0.0;
+                // for player in 0..initial_state.no_players() as usize {
+                //     let mixed_policy_score =
+                //         mixed_strategy_score(&strategy_vec[player], &q_value[player]);
+                //     let max_q_value = q_value[player]
+                //         .iter()
+                //         .max_by(|&a, &b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+                //         .cloned()
+                //         .unwrap_or(0.0);
+                //     total_exploitability += max_q_value / mixed_policy_score - 1.0;
+                // }
+                // println!("ITER: {} % EXPLOITABILITY: {}", i, total_exploitability);
             }
+        }
+        info!("PLAYER STRATEGY");
+        for player in 0..initial_state.no_players() as usize {
+            info!("P{}: {:?}", player, strategy_vec[player]);
         }
     }
 }

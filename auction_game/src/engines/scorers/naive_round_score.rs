@@ -7,10 +7,6 @@ use num_traits::float::FloatCore;
 pub struct NaiveRoundScore {}
 impl NaiveRoundScore {
     pub fn round_score_function(game_state: &GameState) -> Vec<f32> {
-        debug_assert!(
-            game_state.auction_end() == true,
-            "Cannot use round_score_function if round has not ended!"
-        );
         // TODO: Expand beyond 6 players at some point
         let mut scores: Vec<f32> = vec![0.0; game_state.no_players() as usize];
         // let bool_bid_phase_score_function: bool = game_state.game_phase() == GamePhase::Bid

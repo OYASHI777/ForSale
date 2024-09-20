@@ -33,7 +33,7 @@ impl PlayerController for GreedyBaby {
         self.maxn_controller.maximax_round(&game_state, 1, false, 0)
     }
     fn batch_decision(&mut self, game_state: &GameState) -> Vec<u8> {
-        self.cfr_controller.find_nash(game_state, 10000);
+        self.cfr_controller.find_nash(game_state, 20000);
         let mut aggregate_actions: Vec<u8> = Vec::with_capacity(game_state.no_players() as usize);
         for player in 0..game_state.no_players() {
             let action = self.cfr_controller.get_mixed_strategy(game_state, player);

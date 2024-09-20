@@ -1,3 +1,4 @@
+use crate::engines::controllers::greedy_baby::GreedyBaby;
 use crate::engines::controllers::maxn_player::MaxNPlayer;
 use crate::engines::controllers::terminal_player::HumanPlayer;
 use crate::game_modes::traits::Game;
@@ -5,7 +6,7 @@ use crate::{engines, models};
 use ahash::AHashMap;
 use engines::traits::PlayerController;
 use helper::generation::string_to_seed;
-use log::LevelFilter;
+use log::{info, LevelFilter};
 use models::game_state::GameState;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
@@ -60,6 +61,9 @@ impl Game for Play {
                 Box::new(MaxNPlayer::new(i, format!("P{i}").to_string(), true, true)),
             );
         }
+        // TODO: Organise human and greedy baby controllers
+        let mut human = HumanPlayer::new(0, "Brave Human".to_string());
+        let mut greedy_baby = GreedyBaby::new(0, "ENGINE".to_string());
         let mut game_state = GameState::starting(no_players, current_player);
         println!("GameState: {}", game_state);
         game_state.reveal_auction();
@@ -78,19 +82,46 @@ impl Game for Play {
                 best_move = player_control.decision(&game_state);
             }
             if game_state.turn_no() > 1 && game_state.current_player() != 0 {
-                thread::sleep(Duration::from_secs(5));
+                thread::sleep(Duration::from_secs(3));
             }
             println!("Player: {} chose to do: {}", current_player + 1, best_move);
             game_state = game_state.generate_next_state_bid(current_player, best_move);
         }
         println!("{game_state}");
-        let end_scores = MaxNPlayer::round_score_function(&game_state);
-        println!("Ending Score is: {:?}", end_scores);
-        let rank = find_ranking(&end_scores);
-        println!("Your rank was {}!", rank);
-        // let output = player.maximax_round(&game_state, 1, true, 1);
-        // info!("Best move is: {}", output);
-        println!("END");
+
+        // TODO: Make first half only and second half only
+        // let end_scores = MaxNPlayer::round_score_function(&game_state);
+        // println!("Ending Score is: {:?}", end_scores);
+        // let rank = find_ranking(&end_scores);
+        // println!("Your rank was {}!", rank);
+        // // let output = player.maximax_round(&game_state, 1, true, 1);
+        // // info!("Best move is: {}", output);
+        // println!("END");
+
+        println!("");
+        println!("===== Starting Sell Phase =====");
+        println!("");
+        game_state.reveal_auction();
+        while game_state.game_end() == false {
+            let mut aggregate_sales = match game_state.auction_end() {
+                true => {
+                    println!("Before Sell {game_state}");
+                    vec![0; 6]
+                }
+                false => {
+                    println!("Before Sell {game_state}");
+                    let mut temp = greedy_baby.batch_decision(&game_state);
+                    let action = human.decision(&game_state);
+                    temp[0] = action;
+                    println!("Properties Chosen by Players were: {:?}", temp);
+                    temp
+                }
+            };
+            game_state = game_state.generate_next_state_sell(aggregate_sales);
+        }
+        println!("{game_state}");
+        println!("Game has concluded!");
+        println!("\n{}", game_state.tally_game_score());
     }
 }
 fn find_ranking(values: &Vec<f32>) -> usize {

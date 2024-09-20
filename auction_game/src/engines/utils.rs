@@ -22,8 +22,6 @@ pub fn mixed_strategy_score(strategy: &Vec<f32>, score: &Vec<f32>) -> f32 {
         strategy.len(),
         score.len()
     );
-    debug!("mixed_strategy_score strategy: {:?}", strategy);
-    debug!("mixed_strategy_score score: {:?}", score);
     let mut weighted_average: f32 = 0.0;
     for (&st, &sc) in strategy.iter().zip(score.iter()) {
         weighted_average += st * sc;

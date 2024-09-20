@@ -1,5 +1,6 @@
 use auction_game::engines::controllers::greedy_baby::GreedyBaby;
 use auction_game::engines::controllers::random_player::RandomPlayer;
+use auction_game::engines::controllers::terminal_player::HumanPlayer;
 use auction_game::engines::traits::PlayerController;
 use auction_game::game_modes::standard::StandardGame;
 use auction_game::game_modes::traits::Game;
@@ -49,6 +50,45 @@ fn main() {
     info!("===== Starting Sell Phase =====");
     info!("");
     game_state.reveal_auction();
+    // while game_state.game_end() == false {
+    //     history.push(game_state.clone());
+    //     info!("Before Sell {game_state}");
+    //     let aggregate_sales = match game_state.auction_end() {
+    //         true => {
+    //             vec![0; 6]
+    //         }
+    //         false => greedy_baby.batch_decision(&game_state),
+    //     };
+    //     game_state = game_state.generate_next_state_sell(aggregate_sales);
+    // }
+    // info!("{game_state}");
+    // info!(
+    //     "\n ===== Auctions have closed after {} turns =====",
+    //     history.len()
+    // );
+    // info!("\n{}", game_state.tally_game_score());
+    info!("");
+    info!("===== Starting Sell Phase =====");
+    info!("");
+    let mut human = HumanPlayer::new(0, "Brave Human".to_string());
+    // game_state.reveal_auction();
+    println!("Before Sell {game_state}");
+    while game_state.game_end() == false {
+        println!("Before Sell {game_state}");
+        let mut aggregate_sales = match game_state.auction_end() {
+            true => {
+                vec![0; 6]
+            }
+            false => {
+                let mut temp = greedy_baby.batch_decision(&game_state);
+                let action = human.decision(&game_state);
+                temp[0] = action;
+                temp
+            }
+        };
+        game_state = game_state.generate_next_state_sell(aggregate_sales);
+    }
     info!("{game_state}");
-    let aggregate_sales = greedy_baby.batch_decision(&game_state);
+    info!("Game has concluded!");
+    info!("\n{}", game_state.tally_game_score());
 }
