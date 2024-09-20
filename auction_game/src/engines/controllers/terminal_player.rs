@@ -39,6 +39,9 @@ impl PlayerController for HumanPlayer {
             }
         }
     }
+    fn batch_decision(&mut self, game_state: &GameState) -> Vec<u8> {
+        todo!()
+    }
 }
 
 impl HumanPlayer {

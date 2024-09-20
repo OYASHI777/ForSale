@@ -37,3 +37,7 @@ path = "src/bin/test_self_play.rs"
 [[bin]]
 name = "challenge_bots"
 path = "src/bin/challenge_bots.rs"
+
+[[bin]]
+name = "test_cfr"
+path = "src/bin/test_cfr.rs"

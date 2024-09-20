@@ -27,8 +27,14 @@ impl PlayerController for MaxNPlayer {
         self.nickname.clone()
     }
     fn decision(&mut self, game_state: &GameState) -> u8 {
+        // TODO: Might consider making these stored params
         let best_move = self.maximax_round(&game_state, 1, false, 0);
         best_move
+    }
+    fn batch_decision(&mut self, game_state: &GameState) -> Vec<u8> {
+        todo!()
+        //     TODO: Remove controller trait for engines, move engines elsewhere and have controllers run engines
+        //     TODO: So maxn should be an engine not a controller
     }
 }
 

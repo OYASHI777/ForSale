@@ -23,6 +23,9 @@ impl PlayerController for RandomPlayer {
         );
         *legal_moves.choose(&mut self.rng).unwrap()
     }
+    fn batch_decision(&mut self, game_state: &GameState) -> Vec<u8> {
+        todo!()
+    }
 }
 impl RandomPlayer {
     pub fn new(id: u8, nickname: String) -> Self {

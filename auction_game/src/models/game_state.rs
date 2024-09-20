@@ -642,7 +642,7 @@ impl GameState {
             self.manual_next_state_bid(player, action)
         }
     }
-    pub fn generate_next_state_sell(&mut self, player_choices: Vec<Property>) -> Self {
+    pub fn generate_next_state_sell(&self, player_choices: Vec<Property>) -> Self {
         debug_assert!(
             player_choices.len() == self.no_players as usize,
             "Length of player_choices should be {} not {}",
@@ -684,7 +684,7 @@ impl GameState {
         new_state.update_path_encoding_action(player, action);
         new_state
     }
-    pub fn manual_next_state_sell(&mut self, player_choices: Vec<Property>) -> Self {
+    pub fn manual_next_state_sell(&self, player_choices: Vec<Property>) -> Self {
         debug_assert!(
             player_choices.len() == self.no_players as usize,
             "Length of player_choices should be {} not {}",
