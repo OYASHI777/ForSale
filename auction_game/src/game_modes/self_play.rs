@@ -1,4 +1,4 @@
-use crate::engines::controllers::maxn_player::MaxNPlayer;
+use crate::engines::algorithms::maxn_player::MaxNPlayer;
 use crate::game_modes::traits::Game;
 use crate::models::enums::{Coins, Property};
 use crate::{engines, models};

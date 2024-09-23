@@ -1,5 +1,5 @@
+use crate::engines::algorithms::maxn_player::MaxNPlayer;
 use crate::engines::controllers::greedy_baby::GreedyBaby;
-use crate::engines::controllers::maxn_player::MaxNPlayer;
 use crate::engines::controllers::terminal_player::HumanPlayer;
 use crate::game_modes::traits::Game;
 use crate::{engines, models};
