@@ -12,7 +12,7 @@ use rand::{thread_rng, Rng};
 pub struct CFR {
     move_map: AHashMap<String, Vec<BiMap<usize, u8>>>,
     strategy: AHashMap<String, Vec<Vec<f32>>>, // These are probabilities of taking an action
-    q_values: AHashMap<String, Vec<Vec<f32>>>,
+    regret: AHashMap<String, Vec<Vec<f32>>>,
     buffer: Vec<GameState>,
     alternating_update: bool,
 }
@@ -21,12 +21,12 @@ impl CFR {
     pub fn new(alternating_update: bool) -> Self {
         let move_map: AHashMap<String, Vec<BiMap<usize, u8>>> = AHashMap::with_capacity(1);
         let strategy: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
-        let q_values: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
+        let regret: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
         let buffer: Vec<GameState> = Vec::with_capacity(1000);
         CFR {
             move_map,
             strategy,
-            q_values,
+            regret,
             buffer,
             alternating_update,
         }
@@ -42,7 +42,7 @@ impl CFR {
                 vec![vec![1.0 / no_players as f32; no_moves]; no_players as usize];
             self.strategy
                 .insert(path.clone(), initial_strategies.clone());
-            self.q_values.insert(path.clone(), initial_strategies);
+            self.regret.insert(path.clone(), initial_strategies);
             let mut move_map_vec: Vec<BiMap<usize, u8>> =
                 Vec::with_capacity(game_state.no_players() as usize);
             for player in 0..no_players {
@@ -100,7 +100,7 @@ impl CFR {
             Some(strategy_vec) => strategy_vec,
             None => panic!("Failed to find appropriate strategy"),
         };
-        let q_value = match self.q_values.get_mut(&path) {
+        let regret = match self.regret.get_mut(&path) {
             Some(strategy_vec) => strategy_vec,
             None => panic!("Failed to find appropriate q_value"),
         };
@@ -148,20 +148,20 @@ impl CFR {
                 temp_scores
                     .iter_mut()
                     .for_each(|s| *s = (*s - average_score).max(0.0));
-                for (q, t) in q_value[update_player].iter_mut().zip(temp_scores.iter()) {
+                for (q, t) in regret[update_player].iter_mut().zip(temp_scores.iter()) {
                     // CFR
                     // *q += t;
                     // CFR+
                     *q = (*q + t).max(0.0);
                 }
                 if self.alternating_update {
-                    normalize(&mut strategy_vec[update_player], &q_value[update_player]);
+                    normalize(&mut strategy_vec[update_player], &regret[update_player]);
                 }
                 //     Update strategy
             }
             if !self.alternating_update {
                 for update_player in 0..initial_state.no_players() as usize {
-                    normalize(&mut strategy_vec[update_player], &q_value[update_player]);
+                    normalize(&mut strategy_vec[update_player], &regret[update_player]);
                 }
             }
             if i % 10 == 0 {

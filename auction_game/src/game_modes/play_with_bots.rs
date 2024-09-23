@@ -19,6 +19,7 @@ pub struct Play {
     level_filter: LevelFilter,
     // controllers: Vec<Box<dyn PlayerController>>,
     bool_random_starting_player: bool,
+    bool_end_halfway: bool,
 }
 
 // TODO: Add controllers properly
@@ -28,12 +29,14 @@ impl Play {
         level_filter: LevelFilter,
         // controllers: Vec<Box<dyn PlayerController>>,
         bool_random_starting_player: bool,
+        bool_end_halfway: bool,
     ) -> Self {
         Play {
             game_id,
             level_filter,
             // controllers,
             bool_random_starting_player,
+            bool_end_halfway,
         }
     }
 }
@@ -87,17 +90,20 @@ impl Game for Play {
         println!("{game_state}");
 
         // TODO: Make first half only and second half only
-        // let end_scores = MaxNPlayer::round_score_function(&game_state);
-        // println!("Ending Score is: {:?}", end_scores);
-        // let rank = find_ranking(&end_scores);
-        // println!("Your rank was {}!", rank);
-        // // let output = player.maximax_round(&game_state, 1, true, 1);
-        // // info!("Best move is: {}", output);
-        // println!("END");
+        if self.bool_end_halfway {
+            let end_scores = MaxNPlayer::round_score_function(&game_state);
+            println!("Ending Score is: {:?}", end_scores);
+            let rank = find_ranking(&end_scores);
+            println!("Your rank was {}!", rank);
+            // let output = player.maximax_round(&game_state, 1, true, 1);
+            // info!("Best move is: {}", output);
+            println!("END");
+            return;
+        }
 
-        println!("");
+        println!();
         println!("===== Starting Sell Phase =====");
-        println!("");
+        println!();
         game_state.reveal_auction();
         while game_state.game_end() == false {
             let mut aggregate_sales = match game_state.auction_end() {

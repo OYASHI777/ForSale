@@ -9,7 +9,12 @@ fn main() {
     let mut id: u32 = 0;
     init_logger(LevelFilter::Info, "Bot Challenge");
     while id < 1 {
-        let mut game = Play::new(format!("Test_{id}").to_string(), LevelFilter::Info, true);
+        let mut game = Play::new(
+            format!("Test_{id}").to_string(),
+            LevelFilter::Info,
+            true,
+            true,
+        );
         game.game_run();
         id += 1;
     }
