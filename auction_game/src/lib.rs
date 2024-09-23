@@ -1,10 +1,11 @@
 pub mod engines {
-    pub mod controllers {
-        pub mod constants;
+    pub mod algorithms {
         pub mod counterfactual_regret;
-        pub mod greedy_baby;
         pub mod maxn_player;
         pub mod maxn_player_multi;
+    }
+    pub mod controllers {
+        pub mod greedy_baby;
         pub mod random_player;
         pub mod terminal_player;
     }
@@ -17,6 +18,7 @@ pub mod engines {
     pub mod strategies {
         pub mod average;
     }
+    pub mod constants;
     pub mod traits;
     pub mod utils;
 }

@@ -1,5 +1,5 @@
-use crate::engines::controllers::counterfactual_regret::CFR;
-use crate::engines::controllers::maxn_player::MaxNPlayer;
+use crate::engines::algorithms::counterfactual_regret::CFR;
+use crate::engines::algorithms::maxn_player::MaxNPlayer;
 use crate::engines::traits::PlayerController;
 use crate::models::enums::GamePhase;
 use crate::models::game_state::GameState;

@@ -1,4 +1,4 @@
-use crate::engines::controllers::constants::VALUE_PER_PROPERTY;
+use crate::engines::constants::VALUE_PER_PROPERTY;
 use crate::engines::traits::PlayerController;
 use crate::models::enums::{GamePhase, Player, Property};
 use crate::models::game_state::GameState;
