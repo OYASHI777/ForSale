@@ -46,10 +46,11 @@ fn main() {
         current_player = game_state.current_player();
     }
     info!("{game_state}");
-    info!("");
-    info!("===== Starting Sell Phase =====");
-    info!("");
-    game_state.reveal_auction();
+    // Single
+    // info!("");
+    // info!("===== Starting Sell Phase =====");
+    // info!("");
+    // game_state.reveal_auction();
     // while game_state.game_end() == false {
     //     history.push(game_state.clone());
     //     info!("Before Sell {game_state}");
@@ -60,6 +61,7 @@ fn main() {
     //         false => greedy_baby.batch_decision(&game_state),
     //     };
     //     game_state = game_state.generate_next_state_sell(aggregate_sales);
+    //     break;
     // }
     // info!("{game_state}");
     // info!(
@@ -67,6 +69,7 @@ fn main() {
     //     history.len()
     // );
     // info!("\n{}", game_state.tally_game_score());
+    // Multi
     info!("");
     info!("===== Starting Sell Phase =====");
     info!("");
@@ -88,7 +91,7 @@ fn main() {
         };
         game_state = game_state.generate_next_state_sell(aggregate_sales);
     }
-    info!("{game_state}");
-    info!("Game has concluded!");
-    info!("\n{}", game_state.tally_game_score());
+    println!("{game_state}");
+    println!("Game has concluded!");
+    println!("\n{}", game_state.tally_game_score());
 }

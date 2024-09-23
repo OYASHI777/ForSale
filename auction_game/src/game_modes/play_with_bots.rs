@@ -110,6 +110,7 @@ impl Game for Play {
                 }
                 false => {
                     println!("Before Sell {game_state}");
+                    // TODO: Consider moving batch decision
                     let mut temp = greedy_baby.batch_decision(&game_state);
                     let action = human.decision(&game_state);
                     temp[0] = action;

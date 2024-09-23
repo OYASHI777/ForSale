@@ -164,7 +164,7 @@ impl CFR {
                     normalize(&mut strategy_vec[update_player], &q_value[update_player]);
                 }
             }
-            if i % 10000 == 0 {
+            if i % 10 == 0 {
                 // println!("STRATEGY: ITER: {}", i);
                 // for player in 0..initial_state.no_players() as usize {
                 //     println!("P{}: {:?}", player, strategy_vec[player]);
