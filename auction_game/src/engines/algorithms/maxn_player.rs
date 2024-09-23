@@ -22,22 +22,6 @@ pub struct MaxNPlayer {
     bool_log: bool,
 }
 
-impl PlayerController for MaxNPlayer {
-    fn nickname(&self) -> String {
-        self.nickname.clone()
-    }
-    fn decision(&mut self, game_state: &GameState) -> u8 {
-        // TODO: Might consider making these stored params
-        let best_move = self.maximax_round(&game_state, 1, false, 0);
-        best_move
-    }
-    fn batch_decision(&mut self, game_state: &GameState) -> Vec<u8> {
-        todo!()
-        //     TODO: Remove controller trait for engines, move engines elsewhere and have controllers run engines
-        //     TODO: So maxn should be an engine not a controller
-    }
-}
-
 impl MaxNPlayer {
     pub fn new(id: u8, nickname: String, bool_print: bool, bool_log: bool) -> Self {
         let rng = thread_rng();

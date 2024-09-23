@@ -1,4 +1,4 @@
-use auction_game::engines::controllers::maxn_player::MaxNPlayer;
+use auction_game::engines::algorithms::maxn_player::MaxNPlayer;
 use auction_game::models::game_state::GameState;
 use helper::logger::init_logger;
 use log::{info, LevelFilter};

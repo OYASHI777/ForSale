@@ -1,5 +1,5 @@
 use ahash::AHashMap;
-use auction_game::engines::controllers::maxn_player::MaxNPlayer;
+use auction_game::engines::algorithms::maxn_player::MaxNPlayer;
 use auction_game::game_modes::self_play::SelfPlay;
 use auction_game::game_modes::traits::Game;
 use auction_game::models::enums::GamePhase;

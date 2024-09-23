@@ -56,10 +56,7 @@ impl Game for Play {
             AHashMap::with_capacity(no_players as usize);
         controllers.insert(0, Box::new(HumanPlayer::new(0, "Brave Human".to_string())));
         for i in 1..no_players {
-            controllers.insert(
-                i,
-                Box::new(MaxNPlayer::new(i, format!("P{i}").to_string(), true, true)),
-            );
+            controllers.insert(i, Box::new(GreedyBaby::new(i, format!("P{i}").to_string())));
         }
         // TODO: Organise human and greedy baby controllers
         let mut human = HumanPlayer::new(0, "Brave Human".to_string());
