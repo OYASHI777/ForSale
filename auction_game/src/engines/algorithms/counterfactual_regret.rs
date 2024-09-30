@@ -1,6 +1,6 @@
 use crate::engines::q_values::regret::Regret;
 use crate::engines::scorers::naive_round_score::NaiveRoundScore;
-use crate::engines::utils::{mixed_strategy_score, normalize, sample_strategy};
+use crate::engines::utils::{mixed_strategy_score, normalize, sample_strategy, update_average};
 use crate::game_modes::traits::Game;
 use crate::models::enums::{GamePhase, Player};
 use crate::models::game_state::GameState;
@@ -13,6 +13,7 @@ pub struct CFR {
     move_map: AHashMap<String, Vec<BiMap<usize, u8>>>,
     strategy: AHashMap<String, Vec<Vec<f32>>>, // These are probabilities of taking an action
     regret: AHashMap<String, Vec<Vec<f32>>>,
+    value: AHashMap<String, Vec<Vec<f32>>>,
     buffer: Vec<GameState>,
     alternating_update: bool,
 }
@@ -22,11 +23,13 @@ impl CFR {
         let move_map: AHashMap<String, Vec<BiMap<usize, u8>>> = AHashMap::with_capacity(1);
         let strategy: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
         let regret: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
+        let value: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
         let buffer: Vec<GameState> = Vec::with_capacity(1000);
         CFR {
             move_map,
             strategy,
             regret,
+            value,
             buffer,
             alternating_update,
         }
@@ -40,9 +43,11 @@ impl CFR {
             let no_moves = game_state.legal_moves(0).len(); // This is a shortcut that works for For Sale
             let initial_strategies: Vec<Vec<f32>> =
                 vec![vec![1.0 / no_players as f32; no_moves]; no_players as usize];
+            let initial_value: Vec<Vec<f32>> = vec![vec![0.0; no_moves]; no_players as usize];
             self.strategy
                 .insert(path.clone(), initial_strategies.clone());
             self.regret.insert(path.clone(), initial_strategies);
+            self.value.insert(path.clone(), initial_value);
             let mut move_map_vec: Vec<BiMap<usize, u8>> =
                 Vec::with_capacity(game_state.no_players() as usize);
             for player in 0..no_players {
@@ -100,8 +105,12 @@ impl CFR {
             Some(strategy_vec) => strategy_vec,
             None => panic!("Failed to find appropriate strategy"),
         };
-        let regret = match self.regret.get_mut(&path) {
-            Some(strategy_vec) => strategy_vec,
+        let regret_vec = match self.regret.get_mut(&path) {
+            Some(regret_vec) => regret_vec,
+            None => panic!("Failed to find appropriate q_value"),
+        };
+        let value_vec = match self.value.get_mut(&path) {
+            Some(value_vec) => value_vec,
             None => panic!("Failed to find appropriate q_value"),
         };
         let move_map = match self.move_map.get(&path) {
@@ -148,41 +157,52 @@ impl CFR {
                 temp_scores
                     .iter_mut()
                     .for_each(|s| *s = (*s - average_score).max(0.0));
-                for (q, t) in regret[update_player].iter_mut().zip(temp_scores.iter()) {
+                // Calculating Regret
+                for (q, t) in regret_vec[update_player].iter_mut().zip(temp_scores.iter()) {
                     // CFR
                     // *q += t;
                     // CFR+
                     *q = (*q + t).max(0.0);
                 }
                 if self.alternating_update {
-                    normalize(&mut strategy_vec[update_player], &regret[update_player]);
+                    normalize(&mut strategy_vec[update_player], &regret_vec[update_player]);
                 }
                 //     Update strategy
+                update_average(&mut value_vec[update_player], &temp_scores, i + 1);
             }
             if !self.alternating_update {
                 for update_player in 0..initial_state.no_players() as usize {
-                    normalize(&mut strategy_vec[update_player], &regret[update_player]);
+                    normalize(&mut strategy_vec[update_player], &regret_vec[update_player]);
                 }
             }
-            if i % 10 == 0 {
+            if i % 100 == 0 {
                 // println!("STRATEGY: ITER: {}", i);
                 // for player in 0..initial_state.no_players() as usize {
                 //     println!("P{}: {:?}", player, strategy_vec[player]);
                 // }
                 // println!("Q VALUE: ITER: {}", i);
                 // for player in 0..initial_state.no_players() as usize {
-                //     println!("P{}: {:?}", player, q_value[player]);
+                //     println!("P{}: {:?}", player, value_vec[player]);
                 // }
+                // let mut player_values: Vec<f32> = Vec::with_capacity(6);
+                // for player in 0..initial_state.no_players() as usize {
+                //     let mixed_policy_score =
+                //         mixed_strategy_score(&strategy_vec[player], &value_vec[player]);
+                //     player_values.push(mixed_policy_score);
+                // }
+                // println!("{:?}", player_values);
+
+                // ====== EXPLOITABILITY ======
                 // let mut total_exploitability: f32 = 0.0;
                 // for player in 0..initial_state.no_players() as usize {
                 //     let mixed_policy_score =
-                //         mixed_strategy_score(&strategy_vec[player], &q_value[player]);
-                //     let max_q_value = q_value[player]
+                //         mixed_strategy_score(&strategy_vec[player], &value_vec[player]);
+                //     let max_q_value = value_vec[player]
                 //         .iter()
                 //         .max_by(|&a, &b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
                 //         .cloned()
                 //         .unwrap_or(0.0);
-                //     total_exploitability += max_q_value / mixed_policy_score - 1.0;
+                //     total_exploitability += max_q_value - mixed_policy_score;
                 // }
                 // println!("ITER: {} % EXPLOITABILITY: {}", i, total_exploitability);
             }

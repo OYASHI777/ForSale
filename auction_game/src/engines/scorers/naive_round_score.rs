@@ -4,6 +4,7 @@ use crate::models::game_state::GameState;
 use ahash::AHashMap;
 use num_traits::float::FloatCore;
 
+// TODO: Create unnormalised round scoring
 pub struct NaiveRoundScore {}
 impl NaiveRoundScore {
     pub fn round_score_function(game_state: &GameState) -> Vec<f32> {
