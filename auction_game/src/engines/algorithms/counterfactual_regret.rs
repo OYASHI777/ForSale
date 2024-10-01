@@ -6,20 +6,25 @@ use crate::models::enums::{GamePhase, Player};
 use crate::models::game_state::GameState;
 use ahash::AHashMap;
 use bimap::BiMap;
+use itertools::Itertools;
 use log::{debug, info};
 use rand::{thread_rng, Rng};
 
-pub struct CFR {
+pub struct CFR<T>
+where
+    T: Terminator,
+{
     move_map: AHashMap<String, Vec<BiMap<usize, u8>>>,
     strategy: AHashMap<String, Vec<Vec<f32>>>, // These are probabilities of taking an action
     regret: AHashMap<String, Vec<Vec<f32>>>,
     value: AHashMap<String, Vec<Vec<f32>>>,
     buffer: Vec<GameState>,
+    terminator: T,
     alternating_update: bool,
 }
 
-impl CFR {
-    pub fn new(alternating_update: bool) -> Self {
+impl<T> CFR<T> {
+    pub fn new(terminator: T, alternating_update: bool) -> Self {
         let move_map: AHashMap<String, Vec<BiMap<usize, u8>>> = AHashMap::with_capacity(1);
         let strategy: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
         let regret: AHashMap<String, Vec<Vec<f32>>> = AHashMap::with_capacity(1);
@@ -31,6 +36,7 @@ impl CFR {
             regret,
             value,
             buffer,
+            terminator,
             alternating_update,
         }
     }
@@ -98,83 +104,12 @@ impl CFR {
         //      Simulate all other moves based on strategy
         //      Update regret
         // For all q_values update the strategy
-
-        self.initialise_node(&initial_state);
         let path = initial_state.get_path_encoding();
-        let strategy_vec = match self.strategy.get_mut(&path) {
-            Some(strategy_vec) => strategy_vec,
-            None => panic!("Failed to find appropriate strategy"),
-        };
-        let regret_vec = match self.regret.get_mut(&path) {
-            Some(regret_vec) => regret_vec,
-            None => panic!("Failed to find appropriate q_value"),
-        };
-        let value_vec = match self.value.get_mut(&path) {
-            Some(value_vec) => value_vec,
-            None => panic!("Failed to find appropriate q_value"),
-        };
-        let move_map = match self.move_map.get(&path) {
-            Some(move_map) => move_map,
-            None => panic!("Failed to find appropriate move_map"),
-        };
+        if !self.strategy.contains(&path) {
+            self.initialise_node(&initial_state);
+        }
         for i in 0..iterations {
-            for update_player in 0..initial_state.no_players() as usize {
-                let legal_moves = &initial_state.legal_moves(update_player as u8);
-                let mut temp_scores: Vec<f32> = vec![0.0; legal_moves.len()];
-                for move_index in 0..legal_moves.len() {
-                    let mut aggregate_sales: Vec<u8> =
-                        Vec::with_capacity(initial_state.no_players() as usize);
-                    let action = legal_moves[move_index];
-                    for move_player in 0..initial_state.no_players() {
-                        if move_player == update_player as u8 {
-                            aggregate_sales.push(action);
-                        } else {
-                            let sampled_strategy_index =
-                                sample_strategy(&strategy_vec[move_player as usize]);
-                            let sampled_action: u8 = match move_map[move_player as usize]
-                                .get_by_left(&sampled_strategy_index)
-                            {
-                                Some(action) => *action,
-                                None => {
-                                    panic!("Failed to find appropriate action in move_map");
-                                }
-                            };
-                            aggregate_sales.push(sampled_action);
-                        }
-                    }
-                    // Evaluate and update q_value based on action
-                    // TODO: The random choice is not working
-                    let game_state =
-                        initial_state.generate_next_state_sell(aggregate_sales.clone());
-                    let score: f32 =
-                        NaiveRoundScore::round_score_function(&game_state)[update_player];
-                    temp_scores[move_index] = score;
-                }
-                //     Regret matching
-                //     Get average utility
-                let average_score =
-                    mixed_strategy_score(&strategy_vec[update_player], &temp_scores);
-                temp_scores
-                    .iter_mut()
-                    .for_each(|s| *s = (*s - average_score).max(0.0));
-                // Calculating Regret
-                for (q, t) in regret_vec[update_player].iter_mut().zip(temp_scores.iter()) {
-                    // CFR
-                    // *q += t;
-                    // CFR+
-                    *q = (*q + t).max(0.0);
-                }
-                if self.alternating_update {
-                    normalize(&mut strategy_vec[update_player], &regret_vec[update_player]);
-                }
-                //     Update strategy
-                update_average(&mut value_vec[update_player], &temp_scores, i + 1);
-            }
-            if !self.alternating_update {
-                for update_player in 0..initial_state.no_players() as usize {
-                    normalize(&mut strategy_vec[update_player], &regret_vec[update_player]);
-                }
-            }
+            self.cfr(&initial_state, i);
             if i % 100 == 0 {
                 // println!("STRATEGY: ITER: {}", i);
                 // for player in 0..initial_state.no_players() as usize {
@@ -207,9 +142,151 @@ impl CFR {
                 // println!("ITER: {} % EXPLOITABILITY: {}", i, total_exploitability);
             }
         }
+        let strategy_vec = match self.strategy.get_mut(&path) {
+            Some(strategy_vec) => strategy_vec,
+            None => panic!("Failed to find appropriate strategy"),
+        };
+        // let regret_vec = match self.regret.get_mut(&path) {
+        //     Some(regret_vec) => regret_vec,
+        //     None => panic!("Failed to find appropriate q_value"),
+        // };
+        // let value_vec = match self.value.get_mut(&path) {
+        //     Some(value_vec) => value_vec,
+        //     None => panic!("Failed to find appropriate q_value"),
+        // };
+        // let move_map = match self.move_map.get(&path) {
+        //     Some(move_map) => move_map,
+        //     None => panic!("Failed to find appropriate move_map"),
+        // };
         info!("PLAYER STRATEGY");
         for player in 0..initial_state.no_players() as usize {
             info!("P{}: {:?}", player, strategy_vec[player]);
+        }
+    }
+
+    fn cfr(&mut self, initial_state: &&GameState, i: usize) -> Vec<f32> {
+        if self.terminator.is_terminal() {
+            return NaiveRoundScore::round_score_function(&initial_state);
+        }
+        let path = initial_state.get_path_encoding();
+        if !self.strategy.contains(&path) {
+            self.initialise_node(&initial_state);
+        }
+        let strategy_vec = match self.strategy.get_mut(&path) {
+            Some(strategy_vec) => strategy_vec,
+            None => panic!("Failed to find appropriate strategy"),
+        };
+        let regret_vec = match self.regret.get_mut(&path) {
+            Some(regret_vec) => regret_vec,
+            None => panic!("Failed to find appropriate q_value"),
+        };
+        let value_vec = match self.value.get_mut(&path) {
+            Some(value_vec) => value_vec,
+            None => panic!("Failed to find appropriate q_value"),
+        };
+        let move_map = match self.move_map.get(&path) {
+            Some(move_map) => move_map,
+            None => panic!("Failed to find appropriate move_map"),
+        };
+        let mut returned_scores: Vec<Vec<f32>> = vec![
+            vec![0.0; initial_state.no_players() as usize];
+            initial_state.no_players() as usize
+        ];
+        for update_player in 0..initial_state.no_players() as usize {
+            let legal_moves = &initial_state.legal_moves(update_player as u8);
+            // let mut temp_scores: Vec<f32> = vec![0.0; legal_moves.len()];
+            let mut temp_scores: &mut Vec<f32> = returned_scores.get_mut(update_player).unwrap();
+            for move_index in 0..legal_moves.len() {
+                let mut aggregate_sales: Vec<u8> =
+                    Vec::with_capacity(initial_state.no_players() as usize);
+                let action = legal_moves[move_index];
+                for move_player in 0..initial_state.no_players() {
+                    if move_player == update_player as u8 {
+                        aggregate_sales.push(action);
+                    } else {
+                        let sampled_strategy_index =
+                            sample_strategy(&strategy_vec[move_player as usize]);
+                        let sampled_action: u8 = match move_map[move_player as usize]
+                            .get_by_left(&sampled_strategy_index)
+                        {
+                            Some(action) => *action,
+                            None => {
+                                panic!("Failed to find appropriate action in move_map");
+                            }
+                        };
+                        aggregate_sales.push(sampled_action);
+                    }
+                }
+                // Evaluate and update q_value based on action
+                // TODO: The random choice is not working
+                let game_state = initial_state.generate_next_state_sell(aggregate_sales.clone());
+                let score: f32 = NaiveRoundScore::round_score_function(&game_state)[update_player];
+                temp_scores[move_index] = score;
+            }
+            // TODO: Store iterations with strategy, regret, q_value so they can be updated within
+            // TODO: Create a struct for this
+            //     Regret matching
+            //     Get average utility
+            let average_score = mixed_strategy_score(&strategy_vec[update_player], &temp_scores);
+            temp_scores
+                .iter_mut()
+                .for_each(|s| *s = (*s - average_score).max(0.0));
+            // Calculating Regret
+            for (q, t) in regret_vec[update_player].iter_mut().zip(temp_scores.iter()) {
+                // CFR
+                // *q += t;
+                // CFR+
+                *q = (*q + t).max(0.0);
+            }
+            if self.alternating_update {
+                normalize(&mut strategy_vec[update_player], &regret_vec[update_player]);
+            }
+            //     Update strategy
+            update_average(&mut value_vec[update_player], &temp_scores, i + 1);
+        }
+        if !self.alternating_update {
+            for update_player in 0..initial_state.no_players() as usize {
+                normalize(&mut strategy_vec[update_player], &regret_vec[update_player]);
+            }
+        }
+    }
+}
+
+struct TerminalNode {
+    initial_node: GameState,
+    terminal_round: Option<u8>,
+    terminal_turn: Option<u32>,
+}
+
+impl TerminalNode {
+    pub fn turn_terminator(initial_node: &GameState, no_search_turns: u32) -> Self {
+        TerminalNode {
+            initial_node: initial_node.clone(),
+            terminal_round: None,
+            terminal_turn: Some(initial_node.turn_no() + no_search_turns),
+        }
+    }
+    pub fn round_terminator(initial_node: &GameState, no_search_rounds: u8) -> Self {
+        TerminalNode {
+            initial_node: initial_node.clone(),
+            terminal_round: Some(initial_node.round_no() + no_search_rounds),
+            terminal_turn: None,
+        }
+    }
+}
+
+trait Terminator {
+    fn is_terminal(&self, node: &GameState) -> bool;
+}
+
+impl Terminator for TerminalNode {
+    fn is_terminal(&self, node: &GameState) -> bool {
+        if let Some(value) = self.terminal_round {
+            node.round_no() >= value
+        } else if let Some(value) = self.terminal_turn {
+            node.turn_no() >= value
+        } else {
+            panic!("You really should not be here")
         }
     }
 }
