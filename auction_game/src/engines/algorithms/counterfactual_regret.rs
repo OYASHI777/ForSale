@@ -225,8 +225,10 @@ impl<T> CFR<T> {
             }
             // TODO: Store iterations with strategy, regret, q_value so they can be updated within
             // TODO: Create a struct for this
-            //     Regret matching
-            //     Get average utility
+            // TODO: Make Struct with trait, possibly have LRUCache for this
+
+            // Regret matching
+            // Get average utility
             let average_score = mixed_strategy_score(&strategy_vec[update_player], &temp_scores);
             temp_scores
                 .iter_mut()
